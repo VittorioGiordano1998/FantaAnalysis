@@ -1,0 +1,43 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# defaults
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Python
+[*.py]
+indent_style = space
+indent_size = 4
+continuation_indent_size = 4
+max_line_length = 100
+
+# Shell scripts
+[*.{sh,bat,cmd,ps1}]
+end_of_line = lf
+
+# JSON / YAML / TOML
+[*.{json,yml,yaml,toml}]
+indent_style = space
+indent_size = 2
+
+# Markdown
+[*.md]
+trim_trailing_whitespace = false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Python
+#
+# ruff reads this file and enforces the style below. It lives here because a
+# convention that only exists in prose drifts; .editorconfig is machine-checked
+# by `ruff check` / `ruff format --check` in CI.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[*.py]
+indent_size = 4
+max_line_length = 100

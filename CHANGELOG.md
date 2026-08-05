@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   qualità/prezzo, calendario); report Excel (`export_excel.py`) con 5 fogli.
 - Known issues e delivery gap: KI-1 (minuti giocati non esposti da Fantacalcio.it),
   DG-1 (migrazione PuLP 4.0 / CBC esterno).
+- Test end-to-end (`tests/test_e2e.py`): asta simulata con dati reali dalle fixture,
+  dalla prima presa alla rosa finale (stato → proiezione → ottimizzazione → limite di
+  spesa → export/import).
 
 ### Changed
 

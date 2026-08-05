@@ -65,7 +65,7 @@ Tasks: M6-T1 export Excel, M6-T2 deploy Streamlit Cloud.
 
 ## M7 — Test end-to-end
 
-- [ ] Test e2e con dati reali: asta simulata dalla presa del primo giocatore alla rosa finale.
+- [x] Test e2e con dati reali: asta simulata dalla presa del primo giocatore alla rosa finale.
 
 ## Verification
 

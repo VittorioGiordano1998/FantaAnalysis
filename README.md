@@ -24,6 +24,9 @@ Il piano completo è in [`PLANNING.md`](PLANNING.md).
 2. **Installa:** `pip install -r requirements.txt`.
 3. **Avvia:** `streamlit run main.py`.
 
+Per pubblicare l'app su Streamlit Community Cloud (o testarla in locale senza
+deploy) segui [`docs/deploy.md`](docs/deploy.md).
+
 La verifica di qualità (lint + test) gira automaticamente su GitHub Actions al push:
 vedi `docs/contributing/testing.md` per i comandi locali opzionali.
 

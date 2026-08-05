@@ -24,42 +24,42 @@ M1-T3 invalidation cache.
 
 ## M2 — Scraper statistiche e calendario
 
-- [ ] `fetch_stats.py`: gol, assist, minuti, cartellini, rigori per giocatore.
-- [ ] `fetch_fixtures.py`: calendario Serie A (forza avversarie per proiezioni).
-- [ ] Cache settimanale + fixture e test per entrambi.
+- [x] `fetch_stats.py`: gol, assist, minuti, cartellini, rigori per giocatore.
+- [x] `fetch_fixtures.py`: calendario Serie A (forza avversarie per proiezioni).
+- [x] Cache settimanale + fixture e test per entrambi.
 
 Tasks: M2-T1 scraper statistiche, M2-T2 scraper calendario.
 
 ## M3 — Proiezioni punti
 
-- [ ] `projection.py`: punti fanta attesi per ruolo Mantra (stats in corso + FVM + minuti,
+- [x] `projection.py`: punti fanta attesi per ruolo Mantra (stats in corso + FVM + minuti,
       aggiustamento calendario su 5 giornate).
-- [ ] Tipi condivisi (`Player`, `Quote`) come `@dataclass` in `logic`.
+- [x] Tipi condivisi (`Player`, `Quote`) come `@dataclass` in `logic`.
 
 Tasks: M3-T1 modello punti per ruolo, M3-T2 aggiustamento calendario, M3-T3 test unitari.
 
 ## M4 — Ottimizzatore
 
-- [ ] `optimize.py`: PuLP, massimizza punti attesi della rosa 2P-8D-8C-7A con budget 500M e
+- [x] `optimize.py`: PuLP, massimizza punti attesi della rosa 2P-8D-8C-7A con budget 500M e
       slot per ruolo, solo giocatori rimasti.
-- [ ] Limite di spesa per giocatore (punti attesi − costo opportunità).
-- [ ] `@st.cache_data` sui risultati chiave per input.
+- [x] Limite di spesa per giocatore (punti attesi − costo opportunità).
+- [x] `@st.cache_data` sui risultati chiave per input.
 
 Tasks: M4-T1 modello PuLP, M4-T2 limite di spesa, M4-T3 caching e performance.
 
 ## M5 — UI Streamlit e stato asta
 
-- [ ] `main.py` + `pages/`: stato asta live, rosa ottimale, limite spesa, analisi.
-- [ ] `state.py`: JSON stato asta + export/import (Streamlit Cloud, niente disco persistente).
+- [x] `main.py` + `pages/`: stato asta live, rosa ottimale, limite spesa, analisi.
+- [x] `state.py`: JSON stato asta + export/import (Streamlit Cloud, niente disco persistente).
 
 Tasks: M5-T1 stato asta interattivo, M5-T2 pagina rosa ottimale, M5-T3 pagina analisi,
 M5-T4 export/import stato.
 
 ## M6 — Export Excel e deploy
 
-- [ ] Report Excel (`output/`): rosa ottimale, giocatori rimasti, classifica per ruolo,
+- [x] Report Excel (`output/`): rosa ottimale, giocatori rimasti, classifica per ruolo,
       calendario, qualità/prezzo.
-- [ ] Deploy: GitHub repo + Streamlit Community Cloud, link usabile da telefono.
+- [x] Deploy: GitHub repo + Streamlit Community Cloud, link usabile da telefono.
 
 Tasks: M6-T1 export Excel, M6-T2 deploy Streamlit Cloud.
 

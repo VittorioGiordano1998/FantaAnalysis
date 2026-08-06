@@ -38,9 +38,16 @@ del deploy.
 
 - `runtime.txt` → `python-3.12` (versionato; Streamlit Cloud lo onora).
 - `.github/workflows/ci.yml`: su ogni push/PR → Python 3.12, `pip install
-  -r requirements-dev.txt`, `ruff check .`, `pytest` (99 test verdi anche
-  con dipendenze attuali: pandas 3.0.5, PuLP 3.3.2, streamlit 1.61.1).
-- `DG-2-ci-mancante-e-python-non-versionato.md` registrato.
+  -r requirements-dev.txt`, `ruff check .`, `ruff format --check .`,
+  `pytest`. La CI esisteva già dal primo commit ma era rossa sui recenti
+  push (format check su `fetch_fixtures.py`): riformattati `fetch_fixtures.py`,
+  `main.py`, `utility.py`.
+- Nuovo `tests/test_smoke_pages.py`: boot delle 3 pagine Streamlit con
+  cache vuota e fetch patchati (niente rete, niente disco) — un ImportError
+  al boot ora fallisce la CI prima del deploy.
+- `DG-2-ci-senza-smoke-test-e-python-non-versionato.md` aggiornato e
+  rinominato (la CI esisteva ma non copriva il boot; Python Cloud non era
+  versionato).
 - Push su `main` = redeploy forzato di Cloud: se l'ImportError persiste
   dopo il rebuild, serve la riga `ImportError` dai log (Manage app → Logs)
   per la diagnosi mirata.

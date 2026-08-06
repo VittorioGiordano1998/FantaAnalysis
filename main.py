@@ -305,15 +305,11 @@ def _render_consigli() -> None:
         return
     col_module, col_player = st.columns([1, 3])
     module = col_module.selectbox("Modulo", list(MODULES), key="consigli_module")
-    label = col_player.selectbox(
-        "Giocatore tra i rimasti", list(by_label), key="consigli_player"
-    )
+    label = col_player.selectbox("Giocatore tra i rimasti", list(by_label), key="consigli_player")
     if not st.button("Calcola consiglio", key="consigli_run", type="primary"):
         return
     with st.spinner("Calcolo in corso (pochi secondi)..."):
-        taken_tuple = tuple(
-            (pick.player_url, pick.owner, pick.price) for pick in state.taken
-        )
+        taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
         slots = slots_remaining(state, players)
         remaining = state.budget - spent_budget(state)
         limit, utility, points, easy_weeks, has_results = _advice_for(
@@ -392,9 +388,7 @@ def _render_copertura() -> None:
     league = get_league(refresh_flag())
     calendars = get_calendars(refresh_flag())
     strengths = team_strengths_from_players(players)
-    own_urls = frozenset(
-        pick.player_url for pick in state.taken if pick.owner == state.own_team
-    )
+    own_urls = frozenset(pick.player_url for pick in state.taken if pick.owner == state.own_team)
     own_players = [p for p in players if p.url in own_urls]
 
     coverage = week_coverage(own_players, league, calendars, strengths)
@@ -410,9 +404,7 @@ def _render_copertura() -> None:
                 for week in coverage
             ]
         )
-        st.caption(
-            "Partite facili coperte per giornata (scoperta = presenti senza facili)"
-        )
+        st.caption("Partite facili coperte per giornata (scoperta = presenti senza facili)")
         st.dataframe(frame, hide_index=True, width="stretch")
         uncovered = sum(1 for week in coverage if week.uncovered)
         if uncovered:
@@ -425,9 +417,7 @@ def _render_copertura() -> None:
 
     if coverage:
         weeks = [week.matchweek for week in coverage]
-        default_index = next(
-            (i for i, week in enumerate(coverage) if week.uncovered), 0
-        )
+        default_index = next((i for i, week in enumerate(coverage) if week.uncovered), 0)
     else:
         all_weeks = [cal.weeks for cal in calendars.values()]
         weeks = [week.matchweek for week in max(all_weeks, key=len)] if all_weeks else []
@@ -436,20 +426,14 @@ def _render_copertura() -> None:
         st.info("Nessuna giornata valutabile: esegui 'Aggiorna dati'.")
         return
     col_week, col_role = st.columns(2)
-    week_label = col_week.selectbox(
-        "Giornata", weeks, index=default_index, key="copertura_week"
-    )
+    week_label = col_week.selectbox("Giornata", weeks, index=default_index, key="copertura_week")
     role_options = ["Tutti", *GROUP_LABELS.values()]
-    role_label = col_role.selectbox(
-        "Ruolo", role_options, key="copertura_role"
-    )
+    role_label = col_role.selectbox("Ruolo", role_options, key="copertura_role")
     role_group = next(
         (group.value for group, label in GROUP_LABELS.items() if label == role_label),
         "",
     )
-    taken_tuple = tuple(
-        (pick.player_url, pick.owner, pick.price) for pick in state.taken
-    )
+    taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
     rows = _easy_at_week(week_label, role_group, taken_tuple, refresh_flag())
     if not rows:
         st.info("Nessun giocatore rimasto con partita facile in questa giornata.")

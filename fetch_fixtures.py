@@ -228,13 +228,10 @@ def read_remaining_calendar(
     current_matchweek = _current_matchweek(frame)
     future = frame[frame["matchweek"].astype(int) >= current_matchweek]
     calendars: dict[str, TeamCalendar] = {}
-    team_ids = sorted(
-        set(future["home_id"].astype(str)) | set(future["away_id"].astype(str))
-    )
+    team_ids = sorted(set(future["home_id"].astype(str)) | set(future["away_id"].astype(str)))
     for team_id in team_ids:
         matches = future[
-            (future["home_id"].astype(str) == team_id)
-            | (future["away_id"].astype(str) == team_id)
+            (future["home_id"].astype(str) == team_id) | (future["away_id"].astype(str) == team_id)
         ].sort_values(["matchweek", "date"])
         weeks = tuple(
             CalendarWeek(

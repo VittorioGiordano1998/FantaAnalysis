@@ -101,9 +101,7 @@ def team_strengths_from_players(players: Sequence[Player]) -> dict[str, float]:
         if fvm is None:
             continue
         prev = totals.get(player.team_id)
-        totals[player.team_id] = (
-            (prev[0] + float(fvm), prev[1] + 1) if prev else (float(fvm), 1)
-        )
+        totals[player.team_id] = (prev[0] + float(fvm), prev[1] + 1) if prev else (float(fvm), 1)
     return {team_id: total / count for team_id, (total, count) in totals.items()}
 
 
@@ -281,9 +279,7 @@ def week_coverage(
     Returns:
         Una `WeekCoverage` per giornata rimanente, ordinate per matchweek.
     """
-    outlooks = [
-        opponent_outlook(own, league, calendar, team_strengths) for own in own_players
-    ]
+    outlooks = [opponent_outlook(own, league, calendar, team_strengths) for own in own_players]
     weeks = max((len(outlook) for outlook in outlooks), default=0)
     if weeks == 0:
         return ()
@@ -323,9 +319,7 @@ def _coverage(
     gains = [
         1.0 - coverage[index].easy_count / coverage[index].present_count
         for index, opp in enumerate(outlook)
-        if opp.easy is True
-        and index < len(coverage)
-        and coverage[index].present_count > 0
+        if opp.easy is True and index < len(coverage) and coverage[index].present_count > 0
     ]
     if not gains:
         return 0.5
@@ -357,10 +351,7 @@ def _ease_mean(outlook: tuple[OpponentOutlook, ...]) -> float:
     """Frazione di avversari facili; ignoti = 0.5; vuoto = 0.5."""
     if not outlook:
         return 0.5
-    total = sum(
-        1.0 if opp.easy is True else 0.0 if opp.easy is False else 0.5
-        for opp in outlook
-    )
+    total = sum(1.0 if opp.easy is True else 0.0 if opp.easy is False else 0.5 for opp in outlook)
     return total / len(outlook)
 
 

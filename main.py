@@ -17,7 +17,8 @@ from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import cache_mtime, get_quotazioni
 from fetch_stats import get_statistiche
-from optimize import optimize_squad
+from optimize import SpendingLimit, optimize_squad, spending_limit
+from projection import project
 from state import (
     add_taken,
     export_state,
@@ -36,6 +37,7 @@ from ui_common import (
     slot_tuple,
     state_snapshot,
 )
+from utility import MODULES, UtilityScore, opponent_outlook, utility_score
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +51,8 @@ QUOTAZIONI_COLUMNS = (
     "qa",
     "fvm",
 )
+
+OWNER_OTHER = "Avversario"
 
 GROUP_SHORT = {
     RoleGroup.P: "P",
@@ -91,6 +95,42 @@ def _build_report_bytes(
     return build_report(squad, players, league, taken_set)
 
 
+@st.cache_data(show_spinner=False)
+def _advice_for(
+    player_url: str,
+    taken: tuple[tuple[str, str, int | None], ...],
+    budget: int,
+    slots: tuple[tuple[str, int], ...],
+    own_team: str,
+    module: str,
+    force: bool,
+) -> tuple[SpendingLimit, UtilityScore, float, tuple[str, ...]]:
+    """Consiglio per un giocatore (chiave = snapshot asta + modulo).
+
+    Returns:
+        (limite di spesa, utilità, punti attesi, avversari facili).
+    """
+    players = get_players(force)
+    league = get_league(force)
+    player = next(p for p in players if p.url == player_url)
+    taken_set = frozenset(url for url, _, _ in taken)
+    slots_map = {RoleGroup(name): count for name, count in slots}
+    limit = spending_limit(
+        player,
+        players,
+        league,
+        budget=budget,
+        slots=slots_map,
+        taken_urls=taken_set,
+    )
+    own_urls = frozenset(url for url, owner, _ in taken if owner == own_team)
+    own_players = [p for p in players if p.url in own_urls]
+    utility = utility_score(player, league, slots_map, own_players, module)
+    points = project(player, league).total_points
+    easy = tuple(opp.team_name for opp in opponent_outlook(player, league) if opp.easy)
+    return limit, utility, points, easy
+
+
 def _render_aggiorna_dati() -> None:
     """Pulsante "Aggiorna dati": unica via di invalidazione delle cache."""
     if st.button("Aggiorna dati"):
@@ -130,7 +170,12 @@ def _render_stato_asta() -> None:
         st.info("Tutti i giocatori del listone sono già presi.")
         return
     label = st.selectbox("Giocatore", list(by_label), key="pick_player")
-    owner = st.text_input("Squadra che prende", value=state.own_team, key="pick_owner")
+    owner = st.segmented_control(
+        "Squadra che prende",
+        [state.own_team, OWNER_OTHER],
+        default=state.own_team,
+        key="pick_owner",
+    )
     price = 0
     if owner == state.own_team:
         price = st.number_input(
@@ -223,6 +268,62 @@ def _render_report() -> None:
             )
 
 
+def _render_consigli() -> None:
+    """Consigli di acquisto: prezzo max, utilità e calendario per giocatore."""
+    st.subheader("Consigli di acquisto")
+    state = get_state()
+    players = get_players(refresh_flag())
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
+    taken = taken_urls(state)
+    by_label = _player_labels(players, taken)
+    if not by_label:
+        st.info("Tutti i giocatori del listone sono già presi.")
+        return
+    col_module, col_player = st.columns([1, 3])
+    module = col_module.selectbox("Modulo", list(MODULES), key="consigli_module")
+    label = col_player.selectbox(
+        "Giocatore tra i rimasti", list(by_label), key="consigli_player"
+    )
+    if not st.button("Calcola consiglio", key="consigli_run", type="primary"):
+        return
+    with st.spinner("Calcolo in corso (pochi secondi)..."):
+        taken_tuple = tuple(
+            (pick.player_url, pick.owner, pick.price) for pick in state.taken
+        )
+        slots = slots_remaining(state, players)
+        remaining = state.budget - spent_budget(state)
+        limit, utility, points, easy = _advice_for(
+            by_label[label],
+            taken_tuple,
+            remaining,
+            slot_tuple(slots),
+            state.own_team,
+            module,
+            refresh_flag(),
+        )
+    player_name = label.rsplit(" — ", 1)[0]
+    if limit.status != "Optimal":
+        st.warning("Rosa di base non realizzabile: nessun limite calcolabile.")
+    else:
+        st.success(f"Offri al massimo {limit.max_price} crediti per {player_name}.")
+    st.metric("Utilità", f"{utility.score * 100:.0f}%")
+    st.caption(
+        f"Slot: {utility.slot_need * 100:.0f}% · "
+        f"Calendario: {utility.calendar_ease * 100:.0f}% · "
+        f"Copertura: {utility.coverage * 100:.0f}%"
+    )
+    st.caption(
+        f"Punti attesi: {points:.1f} — "
+        + (
+            "Avversari facili: " + ", ".join(easy)
+            if easy
+            else "Nessun avversario facile nelle prossime 5 giornate."
+        )
+    )
+
+
 def _render_quotazioni() -> None:
     """Listone quotazioni con data di aggiornamento."""
     st.subheader("Listone quotazioni")
@@ -269,6 +370,7 @@ def main() -> None:
     _render_report()
     _render_aggiorna_dati()
     _render_stato_asta()
+    _render_consigli()
     _render_quotazioni()
 
 

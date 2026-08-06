@@ -12,14 +12,14 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from entities import RoleGroup
+from entities import Player, RoleGroup
 from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import get_quotazioni
 from fetch_stats import get_statistiche
 from guide import GreedyPick, coverage_completions
 from optimize import optimize_squad
-from projection import project
+from projection import project, starter_share
 from state import export_state, import_state, spent_budget
 from utility import (
     opponent_outlook,
@@ -87,12 +87,12 @@ def _completion(
     taken: tuple[tuple[str, str, int | None], ...],
     budget: int | None,
     force: bool,
-) -> tuple[tuple[int, ...], tuple[tuple[GreedyPick, ...], ...], tuple[int, ...], int | None]:
+) -> tuple[tuple[int, ...], tuple[tuple[GreedyPick, ...], ...], tuple[int, ...], Player]:
     """Copertura per il giocatore cercato (chiave = giocatore + prese + budget).
 
     Returns:
         (giornate facili del cercato, alternative di presa, tutte le
-        giornate rimanenti, QI del cercato).
+        giornate rimanenti, giocatore cercato).
     """
     players = get_players(force)
     league = get_league(force)
@@ -109,7 +109,7 @@ def _completion(
     completions = coverage_completions(
         player, remaining, league, calendars, strengths, budget=budget
     )
-    return own_weeks, completions, remaining_weeks(league, calendars), player.quote.qi
+    return own_weeks, completions, remaining_weeks(league, calendars), player
 
 
 def _app_version() -> str:
@@ -211,7 +211,7 @@ def _render_copertura_giocatore() -> None:
     )
     with st.spinner("Calcolo copertura in corso..."):
         taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
-        own_weeks, completions, weeks, player_qi = _completion(
+        own_weeks, completions, weeks, player = _completion(
             by_label[label], taken_tuple, budget, refresh_flag()
         )
     player_name = label.rsplit(" — ", 1)[0]
@@ -220,9 +220,12 @@ def _render_copertura_giocatore() -> None:
         f"Partite facili di {player_name}: "
         + (", ".join(str(week) for week in own_weeks) if own_weeks else "nessuna")
     )
+    league = get_league(refresh_flag())
+    share = starter_share(player, league)
     st.caption(
-        f"QI di {player_name}: {player_qi if player_qi is not None else '—'} "
-        "crediti (prezzo consigliato per non andare oltre)."
+        f"QI di {player_name}: {player.quote.qi if player.quote.qi is not None else '—'} "
+        "crediti — Titolarietà: "
+        + (f"{share * 100:.0f}%" if share is not None else "non disponibile")
     )
     if not completions:
         if len(set(own_weeks)) == total:
@@ -233,7 +236,6 @@ def _render_copertura_giocatore() -> None:
                 f"facili (coperto {len(set(own_weeks))}/{total} con {budget} crediti)."
             )
         return
-    league = get_league(refresh_flag())
     own_count = len(set(own_weeks))
     main_picks = completions[0]
     _render_alternative(
@@ -273,6 +275,11 @@ def _render_copertura_giocatore() -> None:
         )
 
 
+def _fmt_share(share: float | None) -> str:
+    """Titolarietà percentuale o "—" se non stimabile."""
+    return f"{share * 100:.0f}%" if share is not None else "—"
+
+
 def _render_alternative(
     picks: tuple[GreedyPick, ...],
     title: str,
@@ -296,6 +303,7 @@ def _render_alternative(
                 "squadra": pick.player.team_name,
                 "ruolo": "/".join(role.value.upper() for role in player_roles(pick.player)),
                 "qi": pick.player.quote.qi,
+                "titolarita": _fmt_share(starter_share(pick.player, league)),
                 "punti": round(project(pick.player, league).total_points, 1),
                 "aggiunte": ", ".join(str(week) for week in pick.added_weeks),
                 "coperte": len(pick.covered_weeks),
@@ -311,6 +319,7 @@ def _render_alternative(
             "squadra": st.column_config.TextColumn("Squadra"),
             "ruolo": st.column_config.TextColumn("Ruolo"),
             "qi": st.column_config.NumberColumn("QI (pagalo max)"),
+            "titolarita": st.column_config.TextColumn("Titolarietà"),
             "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
             "aggiunte": st.column_config.TextColumn("Giornate aggiunte"),
             "coperte": st.column_config.NumberColumn("Coperte cum."),

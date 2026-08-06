@@ -15,6 +15,7 @@ from projection import (
     playing_share,
     points_per_match,
     project,
+    starter_share,
 )
 
 PLAYER_URL = "https://www.fantacalcio.it/serie-a/squadre/inter/x/1"
@@ -91,6 +92,22 @@ def test_playing_share_capped_at_one():
     league = _context(current_matchweek=11)
     stats = SeasonStats(played_matches=12)
     assert playing_share(_player(stats=stats), league) == 1.0
+
+
+def test_starter_share_unknown_before_season():
+    league = _context(current_matchweek=1)
+    assert starter_share(_player(), league) is None
+    assert starter_share(_player(stats=SeasonStats(played_matches=0)), league) is None
+
+
+def test_starter_share_from_played_rounds():
+    league = _context(current_matchweek=11)
+    assert starter_share(_player(stats=SeasonStats(played_matches=8)), league) == 0.8
+
+
+def test_starter_share_capped_at_one():
+    league = _context(current_matchweek=11)
+    assert starter_share(_player(stats=SeasonStats(played_matches=12)), league) == 1.0
 
 
 def test_expected_remaining_matches():

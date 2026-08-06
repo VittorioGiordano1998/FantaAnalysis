@@ -92,12 +92,30 @@ def playing_share(player: Player, league: LeagueContext) -> float:
     Returns:
         Frazione in [0, 1].
     """
+    return starter_share(player, league) or 1.0
+
+
+def starter_share(player: Player, league: LeagueContext) -> float | None:
+    """Percentuale di titolarità stimata, `None` se non stimabile.
+
+    Quota di giornate della stagione già giocate in cui il giocatore ha
+    giocato, clampata a 1. Prima della stagione (nessuna giornata giocata)
+    o senza stats il valore è `None` (sconosciuto), a differenza di
+    `playing_share` che in quei casi assume 1.0 per le proiezioni.
+
+    Args:
+        player: giocatore con (opzionali) stats.
+        league: contesto campionato (per le giornate giocate).
+
+    Returns:
+        Frazione in [0, 1] oppure `None` se non stimabile.
+    """
     stats = player.stats
     if stats is None or not stats.played_matches:
-        return 1.0
+        return None
     rounds_played = league.current_matchweek - 1
     if rounds_played <= 0:
-        return 1.0
+        return None
     return min(1.0, stats.played_matches / rounds_played)
 
 

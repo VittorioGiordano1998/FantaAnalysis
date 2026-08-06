@@ -12,26 +12,19 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from entities import Player, RoleGroup
-from export_excel import build_report
-from fetch_fixtures import get_calendario
-from fetch_quotazioni import get_quotazioni
-from fetch_stats import get_statistiche
-from guide import GreedyPick, coverage_completions
-from optimize import optimize_squad
-from projection import project, starter_share
-from state import export_state, import_state, spent_budget
-from utility import (
-    opponent_outlook,
-    player_roles,
-    remaining_weeks,
-    team_strengths_from_players,
-)
-
 logger = logging.getLogger(__name__)
 
 try:
-    from ui_common import (  # noqa: F401
+    from entities import Player, RoleGroup
+    from export_excel import build_report
+    from fetch_fixtures import get_calendario
+    from fetch_quotazioni import get_quotazioni
+    from fetch_stats import get_statistiche
+    from guide import GreedyPick, coverage_completions
+    from optimize import optimize_squad
+    from projection import project, starter_share
+    from state import export_state, import_state, spent_budget
+    from ui_common import (
         get_calendars,
         get_league,
         get_players,
@@ -41,13 +34,20 @@ try:
         slot_tuple,
         state_snapshot,
     )
+    from utility import (
+        LOGIC_VERSION,
+        opponent_outlook,
+        player_roles,
+        remaining_weeks,
+        team_strengths_from_players,
+    )
 except ImportError as exc:
     logger.exception("Deploy incompleto: import falliti al boot (%s)", exc)
     st.error(
         "Deploy incompleto: il server sta servendo file di versioni diverse. "
         "Chiudi l'app, eliminala e ricreala su Streamlit Cloud (Delete app → "
-        "Create app dallo stesso repository), poi riapri — la versione corretta "
-        "è mostrata nella sidebar."
+        "Create app dallo stesso repository, branch `deploy`), poi riapri — "
+        "la versione corretta è mostrata nel titolo."
     )
     st.stop()
 
@@ -118,6 +118,19 @@ def _app_version() -> str:
         return Path("version.txt").read_text(encoding="utf-8").strip()
     except OSError:
         return "?"
+
+
+def deploy_ok(version_file: Path = Path("version.txt")) -> bool:
+    """Vero se il deploy è coerente: `version.txt` == versione della logica.
+
+    Streamlit Cloud può servire file di commit diversi (main.py nuovo con
+    `utility.py` vecchia): il confronto rende il deploy misto visibile
+    subito invece di produrre numeri sbagliati in silenzio.
+    """
+    try:
+        return version_file.read_text(encoding="utf-8").strip() == LOGIC_VERSION
+    except OSError:
+        return False
 
 
 def _render_sidebar() -> None:
@@ -336,6 +349,17 @@ def _render_alternative(
 def main() -> None:
     st.title(f"FantaOptimizer — v{_app_version()}")
     st.caption("Asta Serie A 2026/27 — regolamento Mantra")
+
+    if not deploy_ok():
+        st.error(
+            f"Deploy misto: la versione del deploy ({_app_version()}) non "
+            f"corrisponde alla logica ({LOGIC_VERSION}): il server sta servendo "
+            "file di commit diversi e i calcoli possono essere sbagliati. "
+            "Chiudi l'app, eliminala e ricreala su Streamlit Cloud (Delete app "
+            "→ Create app dallo stesso repository, branch `deploy`), oppure "
+            "cambia il branch in dashboard per forzare un checkout pulito."
+        )
+        st.stop()
 
     if "aggiorna_dati" not in st.session_state:
         st.session_state.aggiorna_dati = False

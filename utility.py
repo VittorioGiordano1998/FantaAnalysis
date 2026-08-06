@@ -21,6 +21,8 @@ from projection import LeagueContext, project
 
 DEFAULT_MODULE = "4-3-3"
 
+LOGIC_VERSION = "0.13.6"
+
 MODULES: Mapping[str, tuple[int, int, int, int]] = {
     "4-3-3": (1, 4, 3, 3),
     "3-5-2": (1, 3, 5, 2),

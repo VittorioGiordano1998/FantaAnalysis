@@ -75,8 +75,8 @@ def _coverage_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamCal
     """Una squadra facile (A) e una difficile (B), 1 giocatore per gruppo."""
     league = _league(
         [
-            _team("1", "Debole", 1.0, 0.5, ()),
-            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("1", "Debole", 0.7, 0.5, ()),
+            _team("3", "Forte", 1.3, 1.5, ()),
         ]
     )
     calendar = {
@@ -100,14 +100,29 @@ SLOTS_ONE = {RoleGroup.P: 1, RoleGroup.D: 1, RoleGroup.C: 1, RoleGroup.A: 1}
 
 
 def test_roster_coverage_prefers_coverage_over_points():
-    players, league, calendar = _coverage_scenario()
-    squad = optimize_roster_coverage(players, league, calendar, budget=200, slots=SLOTS_ONE)
+    league = _league(
+        [
+            _team("1", "Debole", 0.7, 0.5, ()),
+            _team("3", "Forte", 1.3, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "A": _calendar("A", (4, "1"), (5, "1")),
+        "B": _calendar("B", (4, "3"), (5, "3")),
+    }
+    covering = _player("C_A", Role.C, "A", "/p/ca", fvm=100)
+    high_points = _player("C_B", Role.C, "B", "/p/cb", fvm=300)
+    squad = optimize_roster_coverage(
+        [covering, high_points],
+        league,
+        calendar,
+        budget=200,
+        slots={RoleGroup.C: 1},
+    )
     assert squad.status == "Optimal"
-    urls = {player.url for player in squad.selected}
-    assert "/p/ca" in urls
-    assert "/p/cb" not in urls
+    assert {player.url for player in squad.selected} == {"/p/ca"}
     assert squad.covered_weeks == (4, 5)
-    assert squad.total_cost == 40
+    assert squad.total_cost == 10
 
 
 def test_roster_coverage_budget_constraint():
@@ -252,8 +267,8 @@ def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamC
     E e G solo 5 (C, prezzi diversi)."""
     league = _league(
         [
-            _team("1", "Debole", 1.0, 0.5, ()),
-            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("1", "Debole", 0.7, 0.5, ()),
+            _team("3", "Forte", 1.3, 1.5, ()),
         ]
     )
     calendar = {

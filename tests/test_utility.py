@@ -145,7 +145,8 @@ def test_coverage_neutral_without_own_players():
 def test_coverage_penalized_when_own_player_covers_same_week():
     league = _league(
         [
-            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("1", "Debole", 0.7, 0.5, ()),
+            _team("2", "Media", 1.0, 1.0, ()),
             _team("A", "Atalanta", None, None, ("1",)),
             _team("B", "Bologna", None, None, ("1",)),
         ]
@@ -194,6 +195,7 @@ def test_defender_benchmark_is_attack_strength():
     league = _league(
         [
             _team("1", "AttaccoDebole", 0.5, 1.0, ()),
+            _team("2", "Media", 1.0, 1.0, ()),
             _team("A", "Atalanta", None, None, ("1",)),
         ]
     )

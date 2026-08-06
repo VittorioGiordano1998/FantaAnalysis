@@ -241,10 +241,10 @@ def opponent_outlook(
     """Gli avversari rimanenti con forza e flag "facile", in ordine di giornata.
 
     Un avversario è facile per attaccanti e centrocampisti quando la sua
-    difesa (gol subiti a partita) è sotto la media di lega; per difensori e
-    portieri quando il suo attacco (gol fatti) è sotto la media. Senza medie
-    di lega si usa `team_strengths` (se presente) con benchmark medio; senza
-    alcun dato la forza è `None` e `easy` è `None`.
+    difesa (gol subiti a partita) è nel terzo inferiore delle squadre; per
+    difensori e portieri quando il suo attacco (gol fatti) è nel terzo
+    inferiore. A stagione non iniziata si usa `team_strengths` (proxy FVM);
+    senza dati la forza è `None` e `easy` è `None`.
 
     Args:
         player: giocatore di cui si valuta il calendario.
@@ -269,11 +269,7 @@ def opponent_outlook(
         return ()
     if not weeks:
         return ()
-    benchmark = _league_benchmark(player, league)
-    if benchmark is None and team_strengths:
-        values = [v for v in team_strengths.values() if v is not None]
-        if values:
-            benchmark = sum(values) / len(values)
+    threshold = _easy_threshold(player, league, team_strengths)
     outlook: list[OpponentOutlook] = []
     for matchweek, opponent_id in weeks:
         opponent = league.teams.get(opponent_id)
@@ -285,7 +281,7 @@ def opponent_outlook(
                 team_name=opponent.team_name if opponent else opponent_id,
                 matchweek=matchweek,
                 strength=strength,
-                easy=_is_easy(strength, benchmark),
+                easy=_is_easy(strength, threshold),
             )
         )
     return tuple(outlook)
@@ -527,18 +523,47 @@ def _opponent_strength(player: Player, opponent) -> float | None:
     return opponent.gf_per_match
 
 
-def _league_benchmark(player: Player, league: LeagueContext) -> float | None:
-    """Media di lega rilevante (gol subiti o fatti) per il ruolo."""
-    if ROLE_GROUP[player.role] in (RoleGroup.A, RoleGroup.C):
-        return league.league_ga_per_match
-    return league.league_gf_per_match
+def _easy_threshold(
+    player: Player,
+    league: LeagueContext,
+    team_strengths: Mapping[str, float] | None,
+) -> float | None:
+    """Soglia "facile": terzo inferiore delle squadre per la metrica del ruolo.
 
+    Con risultati reali si usano i gol subiti (attaccanti/centrocampisti) o
+    fatti (difensori/portieri) delle squadre; pre-stagione il proxy FVM.
+    Servono almeno 2 squadre con valore, altrimenti `None` (ignoto).
 
-def _is_easy(strength: float | None, benchmark: float | None) -> bool | None:
-    """True se sotto la media di lega; None se il confronto non è possibile."""
-    if strength is None or benchmark is None or benchmark <= 0:
+    Args:
+        player: giocatore di cui si valuta il calendario.
+        league: contesto campionato.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+
+    Returns:
+        La forza alla soglia del terzo inferiore, oppure `None`.
+    """
+    attacking = ROLE_GROUP[player.role] in (RoleGroup.A, RoleGroup.C)
+    if league.league_gf_per_match is not None:
+        values = [
+            team.ga_per_match if attacking else team.gf_per_match
+            for team in league.teams.values()
+            if (team.ga_per_match if attacking else team.gf_per_match) is not None
+        ]
+    elif team_strengths:
+        values = [value for value in team_strengths.values() if value is not None]
+    else:
         return None
-    return strength < benchmark
+    if len(values) < 2:
+        return None
+    ordered = sorted(values)
+    return ordered[max(0, len(ordered) // 3 - 1)]
+
+
+def _is_easy(strength: float | None, threshold: float | None) -> bool | None:
+    """True se la forza è nel terzo inferiore; None se non confrontabile."""
+    if strength is None or threshold is None:
+        return None
+    return strength <= threshold
 
 
 def _ease_mean(outlook: tuple[OpponentOutlook, ...]) -> float:

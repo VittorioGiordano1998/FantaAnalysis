@@ -125,6 +125,7 @@ def coverage_completion(
     limit: int | None = 12,
     budget: int | None = None,
     excluded: frozenset[str] = frozenset(),
+    same_role: bool = True,
 ) -> tuple[GreedyPick, ...]:
     """Chi prendere (oltre a `player`) per coprire le giornate facili.
 
@@ -145,6 +146,8 @@ def coverage_completion(
         limit: numero massimo di suggerimenti (default 12).
         budget: credito massimo spendibile complessivo (None = illimitato).
         excluded: URL da escludere dal pool (es. alternative precedenti).
+        same_role: se True (default) considera solo giocatori che condividono
+            almeno un ruolo con `player` (multiruolo incluso).
 
     Returns:
         I `GreedyPick` ordinati di presa, con costi e coperte cumulative.
@@ -154,10 +157,13 @@ def coverage_completion(
         for opp in opponent_outlook(player, league, calendar, team_strengths)
         if opp.easy is True
     )
+    player_role_set = set(player_roles(player))
     pool = [
         candidate
         for candidate in players
-        if candidate.url != player.url and candidate.url not in excluded
+        if candidate.url != player.url
+        and candidate.url not in excluded
+        and (not same_role or player_role_set & set(player_roles(candidate)))
     ]
     picks: list[GreedyPick] = []
     cost = 0

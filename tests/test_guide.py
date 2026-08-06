@@ -248,7 +248,8 @@ def test_beam_combinations_skips_duplicate_players():
 
 
 def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamCalendar]]:
-    """A copre 4-5, B solo 4, C solo 5, D nulla, E solo 5 ma economico."""
+    """A copre 4-5 (PC), B solo 4 (C), C solo 5 (DC), D nulla (POR),
+    E e G solo 5 (C, prezzi diversi)."""
     league = _league(
         [
             _team("1", "Debole", 1.0, 0.5, ()),
@@ -261,6 +262,7 @@ def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamC
         "C": _calendar("C", (4, "3"), (5, "1")),
         "D": _calendar("D", (4, "3"), (5, "3")),
         "E": _calendar("E", (4, "3"), (5, "1")),
+        "G": _calendar("G", (4, "3"), (5, "1")),
     }
     players = [
         _player("PC_A", Role.PC, "A", "/p/pca"),
@@ -268,6 +270,7 @@ def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamC
         _player("DC_C", Role.DC, "C", "/p/dcc"),
         _player("POR_D", Role.POR, "D", "/p/pord", qi=1),
         _player("C_E", Role.C, "E", "/p/ce", qi=3),
+        _player("C_G", Role.C, "G", "/p/cg", qi=5),
     ]
     return players, league, calendar
 
@@ -323,9 +326,9 @@ def test_coverage_completion_skips_unaffordable():
 def test_coverage_completion_excludes_excluded_urls():
     players, league, calendar = _completion_scenario()
     player = next(p for p in players if p.url == "/p/cb")
-    picks = coverage_completion(player, players, league, calendar, excluded=frozenset({"/p/pca"}))
-    assert all(pick.player.url != "/p/pca" for pick in picks)
-    assert picks and picks[0].player.url == "/p/ce"
+    picks = coverage_completion(player, players, league, calendar, excluded=frozenset({"/p/ce"}))
+    assert all(pick.player.url != "/p/ce" for pick in picks)
+    assert picks and picks[0].player.url == "/p/cg"
 
 
 def test_coverage_completions_returns_multiple_alternatives():
@@ -337,4 +340,40 @@ def test_coverage_completions_returns_multiple_alternatives():
     second = {pick.player.url for pick in completions[1]}
     assert not first & second
     assert completions[0][0].player.url == "/p/ce"
-    assert completions[1][0].player.url == "/p/pca"
+    assert completions[1][0].player.url == "/p/cg"
+
+
+def test_coverage_completion_same_role_filters_pool():
+    players, league, calendar = _completion_scenario()
+    keeper = next(p for p in players if p.url == "/p/pord")
+    assert coverage_completion(keeper, players, league, calendar) == ()
+    picks = coverage_completion(keeper, players, league, calendar, same_role=False)
+    assert picks and picks[0].player.url == "/p/pca"
+
+
+def test_coverage_completion_same_role_uses_multi_role():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "B": _calendar("B", (4, "1"), (5, "3")),
+        "A": _calendar("A", (4, "1"), (5, "1")),
+        "E": _calendar("E", (4, "3"), (5, "1")),
+    }
+    w_a = Player(
+        name="W_A",
+        role=Role.W,
+        team_id="B",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=100),
+        url="/p/wa",
+        roles=(Role.W, Role.A),
+    )
+    a_a = _player("A_A", Role.A, "A", "/p/aa")
+    c_e = _player("C_E", Role.C, "E", "/p/ce", qi=3)
+    picks = coverage_completion(w_a, [w_a, a_a, c_e], league, calendar)
+    assert [pick.player.url for pick in picks] == ["/p/aa"]

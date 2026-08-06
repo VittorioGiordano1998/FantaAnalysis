@@ -71,3 +71,17 @@ chi altro prendere per avere le partite facili coperte.
   sovrapposizioni.
 - Verifica: `pytest` → 139/139; smoke: Martinez → 5 alternative
   42→30 crediti tutte 38/38; con budget 40 le alternative si adattano.
+
+## Follow-up 2 (stessa schermata)
+
+- `guide.coverage_completion(..., same_role=True)`: per default il pool è
+  filtrato a chi condivide almeno un ruolo con il cercato (multiruolo
+  incluso) — se cerco una W non compaiono DC.
+- `main.py`: visibile solo l'**Alternativa principale**; le altre si
+  rivelano con la checkbox "Mostra tutte le alternative" (default spenta,
+  con nota); rendering estratto in `_render_alternative`.
+- Test: filtro per ruolo (stesso ruolo → pool ristretto; `same_role=False`
+  → tutti), multiruolo condiviso (W/A accetta giocatori con ruolo A),
+  alternative multiple nello stesso ruolo.
+- Verifica: `pytest` → 141/141; smoke: Martinez (PC) → solo suggeriti PC,
+  una sola alternativa visibile, 4 expander dopo la spunta.

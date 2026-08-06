@@ -21,7 +21,6 @@ output/
 
 # Streamlit secrets (mai versionare credenziali)
 .streamlit/secrets.toml
-.streamlit/config.toml
 
 # Agent config is single-sourced in .claude/. opencode only scans .opencode/,
 # so these two are junctions (Windows) / symlinks (macOS, Linux) into .claude/.

@@ -19,6 +19,7 @@ from utility import (
     formation_positions,
     missing_roles,
     opponent_outlook,
+    player_roles,
     team_strengths_from_players,
     utility_score,
     week_coverage,
@@ -506,3 +507,42 @@ def test_formation_positions_empty_roster():
     assert [len(line.positions) for line in lines] == [1, 3, 5, 2]
     assert all(slot.player is None for line in lines for slot in line.positions)
     assert missing_roles(lines[1]) == ("dc", "dc", "dc")
+
+
+def test_player_roles_fallback_to_primary():
+    single = _player("P1", Role.PC, "A", "/p/p1")
+    assert player_roles(single) == (Role.PC,)
+
+
+def test_formation_positions_multi_role_fills_matching_position():
+    w_a = Player(
+        name="W_A",
+        role=Role.W,
+        team_id="A",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=100),
+        url="/p/wa",
+        roles=(Role.W, Role.A),
+    )
+    lines = formation_positions("4-3-3", [w_a])
+    a_line = lines[3]
+    assert a_line.positions[1].player is w_a
+    c_line = lines[2]
+    assert all(slot.player is None for slot in c_line.positions)
+
+
+def test_formation_positions_multi_role_not_reused_twice():
+    w_a = Player(
+        name="W_A",
+        role=Role.W,
+        team_id="A",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=100),
+        url="/p/wa",
+        roles=(Role.W, Role.A),
+    )
+    lines = formation_positions("3-4-3", [w_a])
+    filled = [slot.player for line in lines for slot in line.positions if slot.player]
+    assert filled == [w_a]

@@ -7,8 +7,10 @@ Nessun test tocca la rete: la fixture `tests/fixtures/quotazioni_2026_27.html`
 from pathlib import Path
 
 from entities import Role
+from fetch_common import write_csv
 from fetch_quotazioni import (
     CACHE_FILE,
+    CSV_COLUMNS,
     QuotazioniRow,
     get_quotazioni,
     parse_quotazioni_html,
@@ -51,6 +53,20 @@ def test_roles_cover_all_mantra_codes():
     rows = _fixture_rows()
     roles = {row.role for row in rows}
     assert roles == {"por", "dc", "b", "dd", "ds", "e", "m", "c", "w", "t", "a", "pc"}
+
+
+def test_multi_role_players_parsed():
+    rows = _fixture_rows()
+    dimarco = next(row for row in rows if row.name == "Dimarco")
+    assert dimarco.role == "e"
+    assert dimarco.role_label == "Esterno"
+    assert dimarco.roles == "e,w"
+
+
+def test_multi_role_is_common_in_listone():
+    rows = _fixture_rows()
+    multi = [row for row in rows if "," in row.roles]
+    assert len(multi) > 100
 
 
 def test_team_names_resolved():
@@ -102,3 +118,22 @@ def test_read_players_maps_entities(tmp_path):
 
 def test_read_players_missing_cache_returns_empty(tmp_path):
     assert read_players(cache_dir=tmp_path) == []
+
+
+def test_read_players_maps_multi_roles(tmp_path):
+    rows = [next(row for row in _fixture_rows() if row.name == "Dimarco")]
+    rows_to_csv(rows, tmp_path / CACHE_FILE.name)
+    players = read_players(cache_dir=tmp_path)
+    assert players[0].role == Role.E
+    assert players[0].roles == (Role.E, Role.W)
+
+
+def test_read_quotazioni_csv_without_roles_column(tmp_path):
+    rows = _fixture_rows()[:2]
+    path = tmp_path / CACHE_FILE.name
+    old_columns = tuple(column for column in CSV_COLUMNS if column != "roles")
+    old_rows = (
+        {key: value for key, value in row.__dict__.items() if key != "roles"} for row in rows
+    )
+    write_csv(old_rows, path, old_columns)
+    assert read_quotazioni_csv(path) == rows

@@ -104,7 +104,11 @@ class SeasonStats:
 
 @dataclass(frozen=True)
 class Player:
-    """Giocatore del listone con quotazione e (opzionali) stats stagionali."""
+    """Giocatore del listone con quotazione e (opzionali) stats stagionali.
+
+    `role` è il ruolo primario (primo del pill Mantra); `roles` è il
+    multiruolo completo (vuoto = solo `role`), vedi ADR-0005.
+    """
 
     name: str
     role: Role
@@ -114,6 +118,7 @@ class Player:
     quote: Quote
     url: str
     stats: SeasonStats | None = None
+    roles: tuple[Role, ...] = ()
 
 
 @dataclass(frozen=True)

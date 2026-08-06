@@ -45,6 +45,7 @@ CSV_COLUMNS = (
     "team_name",
     "role",
     "role_label",
+    "roles",
     "qi",
     "qa",
     "fvm",
@@ -59,7 +60,7 @@ _SEASON_SELECTOR = "select#season option[selected]"
 
 @dataclass(frozen=True)
 class QuotazioniRow:
-    """Una riga del listone quotazioni (stagione, giocatore, ruolo Mantra)."""
+    """Una riga del listone quotazioni (stagione, giocatore, ruoli Mantra)."""
 
     season: str
     name: str
@@ -68,6 +69,7 @@ class QuotazioniRow:
     team_name: str
     role: str
     role_label: str
+    roles: str
     qi: int | None
     qa: int | None
     fvm: int | None
@@ -89,8 +91,10 @@ def parse_quotazioni_html(html: str) -> list[QuotazioniRow]:
     rows: list[QuotazioniRow] = []
     for tr in soup.select(_PLAYER_ROW_SELECTOR):
         team_id = tr.get("data-filter-team-id", "").strip()
-        role_span = tr.select_one(_ROLE_SPAN_SELECTOR)
+        role_spans = tr.select(_ROLE_SPAN_SELECTOR)
         player_link = tr.select_one("th.player-name a")
+        role_values = [span.get("data-value") for span in role_spans]
+        role_values = [value for value in role_values if value]
         rows.append(
             QuotazioniRow(
                 season=season,
@@ -98,8 +102,9 @@ def parse_quotazioni_html(html: str) -> list[QuotazioniRow]:
                 team_id=team_id,
                 team_code=_cell_text(tr, "td.player-team"),
                 team_name=team_names.get(team_id, ""),
-                role=(role_span.get("data-value") if role_span else "").strip(),
-                role_label=(role_span.get("title") if role_span else "").strip(),
+                role=(role_values[0] if role_values else "").strip(),
+                role_label=(role_spans[0].get("title").strip() if role_spans else ""),
+                roles=",".join(role_values),
                 qi=to_int(_cell_text(tr, "td.player-mantra-initial-price")),
                 qa=to_int(_cell_text(tr, "td.player-mantra-current-price")),
                 fvm=to_int(_cell_text(tr, "td.player-mantra-fvm")),
@@ -131,6 +136,7 @@ def read_quotazioni_csv(path: Path) -> list[QuotazioniRow]:
     rows: list[QuotazioniRow] = []
     with path.open(encoding="utf-8-sig", newline="") as handle:
         for raw in csv.DictReader(handle):
+            roles = raw.get("roles") or raw["role"]
             rows.append(
                 QuotazioniRow(
                     season=raw["season"],
@@ -140,6 +146,7 @@ def read_quotazioni_csv(path: Path) -> list[QuotazioniRow]:
                     team_name=raw["team_name"],
                     role=raw["role"],
                     role_label=raw["role_label"],
+                    roles=roles,
                     qi=to_int(raw["qi"]),
                     qa=to_int(raw["qa"]),
                     fvm=to_int(raw["fvm"]),
@@ -174,6 +181,7 @@ def read_players(cache_dir: Path | None = None) -> list[Player]:
             team_name=row.team_name,
             quote=Quote(qi=row.qi, qa=row.qa, fvm=row.fvm),
             url=row.player_url,
+            roles=tuple(Role(value) for value in row.roles.split(",") if value),
         )
         for row in rows
     ]

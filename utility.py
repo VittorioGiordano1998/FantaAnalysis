@@ -140,12 +140,17 @@ def formation_positions(
         slots: list[PositionSlot] = []
         for role_name in role_names:
             role = Role(role_name)
-            player = next((p for p in unused if p.role is role), None)
+            player = next((p for p in unused if role in player_roles(p)), None)
             if player is not None:
                 unused.remove(player)
             slots.append(PositionSlot(role=role, player=player))
         lines.append(FormationPosition(group=group, positions=tuple(slots)))
     return tuple(lines)
+
+
+def player_roles(player: Player) -> tuple[Role, ...]:
+    """I ruoli del giocatore (multiruolo completo, fallback al primario)."""
+    return player.roles or (player.role,)
 
 
 def missing_roles(line: FormationPosition) -> tuple[str, ...]:

@@ -51,6 +51,7 @@ from utility import (
     formation_positions,
     missing_roles,
     opponent_outlook,
+    player_roles,
     team_strengths_from_players,
     utility_score,
     week_coverage,
@@ -63,7 +64,7 @@ st.set_page_config(page_title="FantaOptimizer", layout="wide")
 QUOTAZIONI_COLUMNS = (
     "name",
     "team_name",
-    "role_label",
+    "ruolo",
     "qi",
     "qa",
     "fvm",
@@ -82,7 +83,15 @@ GROUP_SHORT = {
 @st.cache_data(show_spinner=False)
 def _load_quotazioni(force: bool) -> pd.DataFrame:
     """Carica le quotazioni dalla cache CSV, chiave = flag aggiornamento."""
-    return get_quotazioni(force_refresh=force)
+    frame = get_quotazioni(force_refresh=force)
+    if frame.empty:
+        return frame
+    if "roles" in frame.columns:
+        frame = frame.copy()
+        frame["ruolo"] = frame["roles"].str.upper().str.replace(",", "/")
+    else:
+        frame["ruolo"] = frame.get("role_label", "")
+    return frame
 
 
 @st.cache_data(show_spinner=False)
@@ -268,7 +277,7 @@ def _render_prese() -> None:
 def _render_formazione() -> None:
     """Modulo (condiviso con i consigli) e formazione disegnata con i presi."""
     st.write("#### Formazione")
-    module = st.selectbox("Modulo", list(MODULES), key="modulo")
+    module = _module_selector()
     state = get_state()
     players = get_players(refresh_flag())
     if not players:
@@ -287,7 +296,7 @@ def _render_formazione() -> None:
                 if slot.player is not None:
                     st.markdown(f"**{slot.player.name}**")
                     st.caption(slot.player.team_name)
-                    st.caption(ROLE_LABELS[slot.role])
+                    st.caption(_role_codes(player_roles(slot.player)))
                 else:
                     st.markdown("—")
                     st.caption(ROLE_LABELS[slot.role])
@@ -299,6 +308,27 @@ def _render_formazione() -> None:
         for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A)
     )
     st.caption(f"Rosa presa: {owned} — il modulo si può cambiare in ogni momento.")
+
+
+def _module_selector() -> str:
+    """Selettore modulo persistente (sopravvive a `st.rerun()` parziali).
+
+    Il widget è senza key: il valore vive in `session_state["modulo"]` come
+    entry normale, che non viene ripulita quando un `st.rerun()` interrompe
+    il run prima della creazione del widget (es. conferma presa,
+    "Aggiorna dati").
+    """
+    options = list(MODULES)
+    current = st.session_state.get("modulo")
+    index = options.index(current) if current in MODULES else options.index(DEFAULT_MODULE)
+    module = st.selectbox("Modulo", options, index=index)
+    st.session_state.modulo = module
+    return module
+
+
+def _role_codes(roles: tuple[Role, ...]) -> str:
+    """Codici ruolo compatti come sul listone (es. "E/W")."""
+    return "/".join(role.value.upper() for role in roles)
 
 
 def _app_version() -> str:
@@ -618,7 +648,7 @@ def _render_quotazioni() -> None:
         column_config={
             "name": st.column_config.TextColumn("Nome"),
             "team_name": st.column_config.TextColumn("Squadra"),
-            "role_label": st.column_config.TextColumn("Ruolo"),
+            "ruolo": st.column_config.TextColumn("Ruolo"),
             "qi": st.column_config.NumberColumn("QI"),
             "qa": st.column_config.NumberColumn("QA"),
             "fvm": st.column_config.NumberColumn("FVM"),

@@ -29,33 +29,44 @@ from state import (
     spent_budget,
     taken_urls,
 )
-from ui_common import (
-    get_calendars,
-    get_league,
-    get_players,
-    get_state,
-    refresh_flag,
-    render_formation,
-    set_state,
-    slot_tuple,
-    state_snapshot,
-)
-from utility import (
-    DEFAULT_MODULE,
-    MODULES,
-    CoverageRecommendation,
-    UtilityScore,
-    WeekSuggestion,
-    coverage_recommendations,
-    coverage_suggestions,
-    easy_candidates,
-    opponent_outlook,
-    team_strengths_from_players,
-    utility_score,
-    week_coverage,
-)
 
 logger = logging.getLogger(__name__)
+
+try:
+    from ui_common import (
+        get_calendars,
+        get_league,
+        get_players,
+        get_state,
+        refresh_flag,
+        render_formation,
+        set_state,
+        slot_tuple,
+        state_snapshot,
+    )
+    from utility import (
+        DEFAULT_MODULE,
+        MODULES,
+        CoverageRecommendation,
+        UtilityScore,
+        WeekSuggestion,
+        coverage_recommendations,
+        coverage_suggestions,
+        easy_candidates,
+        opponent_outlook,
+        team_strengths_from_players,
+        utility_score,
+        week_coverage,
+    )
+except ImportError as exc:
+    logger.exception("Deploy incompleto: import falliti al boot (%s)", exc)
+    st.error(
+        "Deploy incompleto: il server sta servendo file di versioni diverse. "
+        "Chiudi l'app, eliminala e ricreala su Streamlit Cloud (Delete app → "
+        "Create app dallo stesso repository), poi riapri — la versione corretta "
+        "è mostrata nella sidebar."
+    )
+    st.stop()
 
 st.set_page_config(page_title="FantaOptimizer", layout="wide")
 

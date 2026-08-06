@@ -8,6 +8,7 @@ from entities import Player, Quote, Role, RoleGroup
 from guide import (
     beam_combinations,
     coverage_completion,
+    coverage_completions,
     greedy_cover,
     k_best_rosters,
     optimize_roster_coverage,
@@ -25,14 +26,14 @@ FULL_SLOTS = {
 }
 
 
-def _player(name: str, role: Role, team_id: str, url: str, fvm: int = 100) -> Player:
+def _player(name: str, role: Role, team_id: str, url: str, fvm: int = 100, qi: int = 10) -> Player:
     return Player(
         name=name,
         role=role,
         team_id=team_id,
         team_code="TC",
         team_name="Team",
-        quote=Quote(qi=10, qa=10, fvm=fvm),
+        quote=Quote(qi=qi, qa=qi, fvm=fvm),
         url=url,
     )
 
@@ -247,7 +248,7 @@ def test_beam_combinations_skips_duplicate_players():
 
 
 def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamCalendar]]:
-    """A copre 4-5, B solo 4, C solo 5."""
+    """A copre 4-5, B solo 4, C solo 5, D nulla, E solo 5 ma economico."""
     league = _league(
         [
             _team("1", "Debole", 1.0, 0.5, ()),
@@ -259,12 +260,14 @@ def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamC
         "B": _calendar("B", (4, "1"), (5, "3")),
         "C": _calendar("C", (4, "3"), (5, "1")),
         "D": _calendar("D", (4, "3"), (5, "3")),
+        "E": _calendar("E", (4, "3"), (5, "1")),
     }
     players = [
         _player("PC_A", Role.PC, "A", "/p/pca"),
         _player("C_B", Role.C, "B", "/p/cb"),
         _player("DC_C", Role.DC, "C", "/p/dcc"),
-        _player("POR_D", Role.POR, "D", "/p/pord"),
+        _player("POR_D", Role.POR, "D", "/p/pord", qi=1),
+        _player("C_E", Role.C, "E", "/p/ce", qi=3),
     ]
     return players, league, calendar
 
@@ -274,7 +277,7 @@ def test_coverage_completion_starts_from_player_weeks():
     player = next(p for p in players if p.url == "/p/cb")
     picks = coverage_completion(player, players, league, calendar)
     assert len(picks) == 1
-    assert picks[0].player.url == "/p/pca"
+    assert picks[0].player.url == "/p/ce"
     assert picks[0].added_weeks == (5,)
     assert picks[0].covered_weeks == (4, 5)
 
@@ -299,3 +302,39 @@ def test_coverage_completion_respects_limit():
     player = next(p for p in players if p.url == "/p/cb")
     picks = coverage_completion(player, players, league, calendar, limit=1)
     assert len(picks) == 1
+
+
+def test_coverage_completion_respects_budget():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, players, league, calendar, budget=1)
+    assert picks == ()
+
+
+def test_coverage_completion_skips_unaffordable():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, players, league, calendar, budget=5)
+    assert [pick.player.url for pick in picks] == ["/p/ce"]
+    assert picks[0].covered_weeks == (4, 5)
+    assert picks[0].cost == 3
+
+
+def test_coverage_completion_excludes_excluded_urls():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, players, league, calendar, excluded=frozenset({"/p/pca"}))
+    assert all(pick.player.url != "/p/pca" for pick in picks)
+    assert picks and picks[0].player.url == "/p/ce"
+
+
+def test_coverage_completions_returns_multiple_alternatives():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    completions = coverage_completions(player, players, league, calendar, k=3)
+    assert len(completions) >= 2
+    first = {pick.player.url for pick in completions[0]}
+    second = {pick.player.url for pick in completions[1]}
+    assert not first & second
+    assert completions[0][0].player.url == "/p/ce"
+    assert completions[1][0].player.url == "/p/pca"

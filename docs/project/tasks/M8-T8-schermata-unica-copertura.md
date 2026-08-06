@@ -56,3 +56,18 @@ chi altro prendere per avere le partite facili coperte.
 - Verifica: `pytest` → 135/135; ruff puliti; smoke AppTest: 0 tab, 494
   giocatori ricercabili, Martinez L. → 24/38 coperti da solo, con Esposito
   Se. e Hojlund si arriva a 38/38.
+
+## Follow-up (stessa schermata)
+
+- `guide.coverage_completion` accetta `budget` (crediti massimi; salta i
+  giocatori che non ci stanno) e `excluded` (URL da escludere); nuova
+  `coverage_completions(..., k=5)` → alternative di copertura multiple
+  (ognuna esclude i suggeriti delle precedenti).
+- `main.py`: input "Budget massimo per i suggerimenti" (default: residuo
+  dello stato asta, nella chiave cache), 5 alternative in expander con
+  riepilogo e tabelle, caption "QI di X: N crediti (prezzo consigliato)".
+- Test: budget (stop a budget esaurito, salta inaccessibili, preferisce il
+  più economico a parità), `excluded`, alternative multiple senza
+  sovrapposizioni.
+- Verifica: `pytest` → 139/139; smoke: Martinez → 5 alternative
+  42→30 crediti tutte 38/38; con budget 40 le alternative si adattano.

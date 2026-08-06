@@ -17,10 +17,10 @@ from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import get_quotazioni
 from fetch_stats import get_statistiche
-from guide import GreedyPick, coverage_completion
+from guide import GreedyPick, coverage_completions
 from optimize import optimize_squad
 from projection import project
-from state import export_state, import_state
+from state import export_state, import_state, spent_budget
 from utility import (
     opponent_outlook,
     player_roles,
@@ -85,13 +85,14 @@ def _build_report_bytes(
 def _completion(
     player_url: str,
     taken: tuple[tuple[str, str, int | None], ...],
+    budget: int | None,
     force: bool,
-) -> tuple[tuple[int, ...], tuple[GreedyPick, ...], tuple[int, ...]]:
-    """Copertura per il giocatore cercato (chiave = giocatore + prese).
+) -> tuple[tuple[int, ...], tuple[tuple[GreedyPick, ...], ...], tuple[int, ...], int | None]:
+    """Copertura per il giocatore cercato (chiave = giocatore + prese + budget).
 
     Returns:
-        (giornate facili del cercato, suggerimenti di presa, tutte le
-        giornate rimanenti).
+        (giornate facili del cercato, alternative di presa, tutte le
+        giornate rimanenti, QI del cercato).
     """
     players = get_players(force)
     league = get_league(force)
@@ -105,8 +106,10 @@ def _completion(
         for opp in opponent_outlook(player, league, calendars, strengths)
         if opp.easy is True
     )
-    picks = coverage_completion(player, remaining, league, calendars, strengths)
-    return own_weeks, picks, remaining_weeks(league, calendars)
+    completions = coverage_completions(
+        player, remaining, league, calendars, strengths, budget=budget
+    )
+    return own_weeks, completions, remaining_weeks(league, calendars), player.quote.qi
 
 
 def _app_version() -> str:
@@ -197,63 +200,83 @@ def _render_copertura_giocatore() -> None:
         st.info("Tutti i giocatori del listone sono già presi.")
         return
     label = st.selectbox("Calciatore", list(by_label), key="cover_player")
+    state_budget = state.budget - spent_budget(state)
+    budget = st.number_input(
+        "Budget massimo per i suggerimenti (crediti)",
+        min_value=0,
+        max_value=state.budget,
+        value=max(0, state_budget),
+        step=10,
+        key="cover_budget",
+    )
     with st.spinner("Calcolo copertura in corso..."):
         taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
-        own_weeks, picks, weeks = _completion(by_label[label], taken_tuple, refresh_flag())
+        own_weeks, completions, weeks, player_qi = _completion(
+            by_label[label], taken_tuple, budget, refresh_flag()
+        )
     player_name = label.rsplit(" — ", 1)[0]
     total = len(weeks)
     st.caption(
         f"Partite facili di {player_name}: "
         + (", ".join(str(week) for week in own_weeks) if own_weeks else "nessuna")
     )
-    if not picks:
+    st.caption(
+        f"QI di {player_name}: {player_qi if player_qi is not None else '—'} "
+        "crediti (prezzo consigliato per non andare oltre)."
+    )
+    if not completions:
         if len(set(own_weeks)) == total:
             st.success(f"Con {player_name} copri già tutte le {total} giornate facili.")
         else:
             st.info(
-                "Nessun altro giocatore aggiunge giornate facili oltre a quelle "
-                f"già coperte ({len(set(own_weeks))}/{total})."
+                "Nessun altro giocatore aggiunge giornate facili "
+                f"(coperto {len(set(own_weeks))}/{total} con {budget} crediti)."
             )
         return
-    final_covered = len(picks[-1].covered_weeks)
-    st.success(
-        f"Con {player_name} copri {len(set(own_weeks))}/{total} giornate facili: "
-        f"prendendo questi arrivi a {final_covered}/{total}."
-    )
     league = get_league(refresh_flag())
-    frame = pd.DataFrame(
-        [
-            {
-                "nome": pick.player.name,
-                "squadra": pick.player.team_name,
-                "ruolo": "/".join(role.value.upper() for role in player_roles(pick.player)),
-                "qi": pick.player.quote.qi,
-                "punti": round(project(pick.player, league).total_points, 1),
-                "aggiunte": ", ".join(str(week) for week in pick.added_weeks),
-                "coperte": len(pick.covered_weeks),
-                "costo": pick.cost,
-            }
-            for pick in picks
-        ]
-    )
-    st.dataframe(
-        frame,
-        column_config={
-            "nome": st.column_config.TextColumn("Prendi"),
-            "squadra": st.column_config.TextColumn("Squadra"),
-            "ruolo": st.column_config.TextColumn("Ruolo"),
-            "qi": st.column_config.NumberColumn("QI"),
-            "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
-            "aggiunte": st.column_config.TextColumn("Giornate aggiunte"),
-            "coperte": st.column_config.NumberColumn("Coperte cum."),
-            "costo": st.column_config.NumberColumn("Costo cum."),
-        },
-        hide_index=True,
-        width="stretch",
-    )
-    uncovered = [week for week in weeks if week not in picks[-1].covered_weeks]
-    if uncovered:
-        st.caption("Giornate ancora scoperte: " + ", ".join(str(w) for w in uncovered))
+    for index, picks in enumerate(completions, start=1):
+        final_covered = len(picks[-1].covered_weeks)
+        label_alt = (
+            f"Alternativa {index} — coperto {final_covered}/{total}, {picks[-1].cost} crediti"
+        )
+        with st.expander(label_alt):
+            st.caption(
+                f"Con {player_name} copri {len(set(own_weeks))}/{total} giornate "
+                f"facili: prendendo questi arrivi a {final_covered}/{total}."
+            )
+            frame = pd.DataFrame(
+                [
+                    {
+                        "nome": pick.player.name,
+                        "squadra": pick.player.team_name,
+                        "ruolo": "/".join(role.value.upper() for role in player_roles(pick.player)),
+                        "qi": pick.player.quote.qi,
+                        "punti": round(project(pick.player, league).total_points, 1),
+                        "aggiunte": ", ".join(str(week) for week in pick.added_weeks),
+                        "coperte": len(pick.covered_weeks),
+                        "costo": pick.cost,
+                    }
+                    for pick in picks
+                ]
+            )
+            st.dataframe(
+                frame,
+                column_config={
+                    "nome": st.column_config.TextColumn("Prendi"),
+                    "squadra": st.column_config.TextColumn("Squadra"),
+                    "ruolo": st.column_config.TextColumn("Ruolo"),
+                    "qi": st.column_config.NumberColumn("QI (pagalo max)"),
+                    "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
+                    "aggiunte": st.column_config.TextColumn("Giornate aggiunte"),
+                    "coperte": st.column_config.NumberColumn("Coperte cum."),
+                    "costo": st.column_config.NumberColumn("Costo cum."),
+                },
+                hide_index=True,
+                width="stretch",
+            )
+            uncovered = [week for week in weeks if week not in picks[-1].covered_weeks]
+            if uncovered:
+                st.caption("Giornate ancora scoperte: " + ", ".join(str(w) for w in uncovered))
 
 
 def main() -> None:

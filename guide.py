@@ -123,14 +123,18 @@ def coverage_completion(
     calendar: Mapping[str, TeamCalendar] | None = None,
     team_strengths: Mapping[str, float] | None = None,
     limit: int | None = 12,
+    budget: int | None = None,
+    excluded: frozenset[str] = frozenset(),
 ) -> tuple[GreedyPick, ...]:
     """Chi prendere (oltre a `player`) per coprire le giornate facili.
 
     Greedy: parte dalle giornate facili di `player` e aggiunge a ogni passo
-    il giocatore rimasto (escluso `player`) che copre più giornate non
-    ancora coperte (a parità, più punti, poi costo minore); si ferma
-    quando tutte le giornate rimanenti sono coperte, quando nessuno
-    aggiunge più nulla o al raggiungimento di `limit` prese.
+    il giocatore rimasto (esclusi `player` e `excluded`) che copre più
+    giornate non ancora coperte (a parità, più punti, poi costo minore);
+    con `budget` considera solo i giocatori che ci stanno nei crediti
+    rimanenti. Si ferma quando tutte le giornate rimanenti sono coperte,
+    quando nessuno aggiunge più nulla, quando il budget non basta più o al
+    raggiungimento di `limit` prese.
 
     Args:
         player: giocatore cercato (già nel pool dei rimasti).
@@ -139,6 +143,8 @@ def coverage_completion(
         calendar: calendario rimanente per squadra.
         team_strengths: forza squadra stimata (fallback pre-stagione).
         limit: numero massimo di suggerimenti (default 12).
+        budget: credito massimo spendibile complessivo (None = illimitato).
+        excluded: URL da escludere dal pool (es. alternative precedenti).
 
     Returns:
         I `GreedyPick` ordinati di presa, con costi e coperte cumulative.
@@ -148,12 +154,19 @@ def coverage_completion(
         for opp in opponent_outlook(player, league, calendar, team_strengths)
         if opp.easy is True
     )
-    pool = [candidate for candidate in players if candidate.url != player.url]
+    pool = [
+        candidate
+        for candidate in players
+        if candidate.url != player.url and candidate.url not in excluded
+    ]
     picks: list[GreedyPick] = []
     cost = 0
     while pool and (limit is None or len(picks) < limit):
         best: tuple[tuple, Player, frozenset[int]] | None = None
         for candidate in pool:
+            price = candidate.quote.qi or 0
+            if budget is not None and cost + price > budget:
+                continue
             easy = frozenset(
                 opp.matchweek
                 for opp in opponent_outlook(candidate, league, calendar, team_strengths)
@@ -162,7 +175,7 @@ def coverage_completion(
             key = (
                 -len(easy - covered),
                 -project(candidate, league).total_points,
-                candidate.quote.qi or 0,
+                price,
             )
             if best is None or key < best[0]:
                 best = (key, candidate, easy)
@@ -184,6 +197,57 @@ def coverage_completion(
             )
         )
     return tuple(picks)
+
+
+def coverage_completions(
+    player: Player,
+    players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+    *,
+    limit: int | None = 12,
+    budget: int | None = None,
+    k: int = 5,
+) -> tuple[tuple[GreedyPick, ...], ...]:
+    """K alternative di copertura per il giocatore cercato.
+
+    L'alternativa n esclude i suggeriti delle alternative precedenti: se i
+    primi non sono disponibili in asta, ecco la migliore combinazione
+    rimasta.
+
+    Args:
+        player: giocatore cercato (già nel pool dei rimasti).
+        players: giocatori ancora disponibili (pool).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+        limit: numero massimo di suggerimenti per alternativa.
+        budget: credito massimo spendibile complessivo (None = illimitato).
+        k: numero di alternative (default 5).
+
+    Returns:
+        Una tupla di `GreedyPick` per alternativa (meno se il pool si
+        esaurisce o non ci sono più coperture).
+    """
+    excluded: set[str] = set()
+    completions: list[tuple[GreedyPick, ...]] = []
+    for _ in range(k):
+        picks = coverage_completion(
+            player,
+            players,
+            league,
+            calendar,
+            team_strengths,
+            limit=limit,
+            budget=budget,
+            excluded=frozenset(excluded),
+        )
+        if not picks:
+            break
+        completions.append(picks)
+        excluded |= {pick.player.url for pick in picks}
+    return tuple(completions)
 
 
 def position_candidates(

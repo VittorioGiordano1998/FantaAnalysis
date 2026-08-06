@@ -117,6 +117,10 @@ def _render_stato_asta() -> None:
         "Slot rimasti: " + " — ".join(f"{GROUP_SHORT[g]} {n}" for g, n in slots.items())
     )
 
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
+
     name_by_url = {player.url: player.name for player in players}
     taken = taken_urls(state)
 
@@ -203,7 +207,10 @@ def _render_report() -> None:
     """Report Excel completo (M6-T1) nella sidebar."""
     with st.sidebar:
         st.subheader("Report")
-        taken, budget, slots, _ = state_snapshot()
+        taken, budget, slots, players = state_snapshot()
+        if not players:
+            st.info("Dati non ancora scaricati: esegui 'Aggiorna dati'.")
+            return
         data = _build_report_bytes(taken, budget, slot_tuple(slots), refresh_flag())
         if not data:
             st.info("Rosa non realizzabile: report non disponibile.")
@@ -220,6 +227,9 @@ def _render_quotazioni() -> None:
     """Listone quotazioni con data di aggiornamento."""
     st.subheader("Listone quotazioni")
     frame = _load_quotazioni(refresh_flag())
+    if frame.empty:
+        st.info("Nessun dato disponibile: premi 'Aggiorna dati'.")
+        return
     last_update = cache_mtime()
     if last_update is not None:
         st.caption(f"Ultimo aggiornamento: {last_update:%d/%m/%Y %H:%M}")

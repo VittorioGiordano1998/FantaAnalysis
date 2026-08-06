@@ -140,6 +140,9 @@ def main() -> None:
     st.title("Rosa ottimale")
     force = refresh_flag()
     taken, budget, slots, players = _state_inputs()
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
     _render_rosa(taken, budget, slots, players, force)
     _render_limite(taken, budget, slots, players, force)
 

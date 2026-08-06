@@ -179,8 +179,12 @@ def read_league_context(cache_dir: Path | None = None) -> LeagueContext:
 
     Returns:
         Contesto campionato con forze squadra e calendario prossimo.
+        Contesto vuoto se la cache non esiste ancora (primo avvio su Cloud).
     """
     path = (cache_dir or CACHE_DIR) / CACHE_FILE.name
+    if not path.is_file():
+        logger.warning("Cache calendario assente: %s (esegui 'Aggiorna dati')", path)
+        return LeagueContext(season="", current_matchweek=1, teams={})
     frame = read_cache_frame(path)
     if frame.empty:
         return LeagueContext(season="", current_matchweek=1, teams={})

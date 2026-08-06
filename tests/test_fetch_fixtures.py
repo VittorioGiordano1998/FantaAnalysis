@@ -69,6 +69,14 @@ def test_get_calendario_reuses_fresh_cache(tmp_path):
     assert frame.iloc[0]["matchweek"] == rows[0].matchweek
 
 
+def test_read_league_context_missing_cache_returns_empty(tmp_path):
+    context = read_league_context(cache_dir=tmp_path)
+    assert context.season == ""
+    assert context.current_matchweek == 1
+    assert context.teams == {}
+    assert context.league_gf_per_match is None
+
+
 def test_read_league_context_neutral_before_season_start(tmp_path):
     rows = _synthetic_season(played_weeks=0)
     rows_to_csv(rows, tmp_path / CACHE_FILE.name)

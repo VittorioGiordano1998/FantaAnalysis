@@ -91,3 +91,7 @@ def test_read_season_stats_keyed_by_player_url(tmp_path):
     assert stats.grade_avg == 7.0
     assert stats.goals == 1
     assert stats.penalties_scored == 1
+
+
+def test_read_season_stats_missing_cache_returns_empty(tmp_path):
+    assert read_season_stats(cache_dir=tmp_path) == {}

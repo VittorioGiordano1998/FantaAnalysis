@@ -183,9 +183,12 @@ def read_season_stats(cache_dir: Path | None = None) -> dict[str, SeasonStats]:
 
     Returns:
         Stats stagionali chiavate sull'URL della pagina giocatore (la chiave
-        di join con `Player.url`).
+        di join con `Player.url`). Vuote se la cache non esiste ancora.
     """
     path = (cache_dir or CACHE_DIR) / CACHE_FILE.name
+    if not path.is_file():
+        logger.warning("Cache statistiche assente: %s (esegui 'Aggiorna dati')", path)
+        return {}
     rows = read_statistiche_csv(path)
     return {
         row.player_url: SeasonStats(

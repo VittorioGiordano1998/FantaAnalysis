@@ -98,3 +98,7 @@ def test_read_players_maps_entities(tmp_path):
     assert martinez.quote.qi == 35
     assert martinez.quote.fvm == 370
     assert martinez.stats is None
+
+
+def test_read_players_missing_cache_returns_empty(tmp_path):
+    assert read_players(cache_dir=tmp_path) == []

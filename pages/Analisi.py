@@ -122,6 +122,9 @@ def main() -> None:
     force = refresh_flag()
     players = get_players(force)
     league = get_league(force)
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
     _render_analisi(players, league)
     _render_calendario(players, league)
 

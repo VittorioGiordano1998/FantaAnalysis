@@ -158,8 +158,12 @@ def read_players(cache_dir: Path | None = None) -> list[Player]:
     Returns:
         Lista di `Player` con quotazione ma senza stats (vedi
         `fetch_stats.read_season_stats` + `entities.attach_stats`).
+        Vuota se la cache non esiste ancora (primo avvio su Cloud).
     """
     path = (cache_dir or CACHE_DIR) / CACHE_FILE.name
+    if not path.is_file():
+        logger.warning("Cache quotazioni assente: %s (esegui 'Aggiorna dati')", path)
+        return []
     rows = read_quotazioni_csv(path)
     return [
         Player(

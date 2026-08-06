@@ -18,7 +18,12 @@ import fetch_stats as fs
 import state as st8
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = (ROOT / "main.py", ROOT / "pages/RosaOttimale.py", ROOT / "pages/Analisi.py")
+PAGES = (
+    ROOT / "main.py",
+    ROOT / "pages/RosaOttimale.py",
+    ROOT / "pages/Analisi.py",
+    ROOT / "pages/Guide.py",
+)
 
 
 @pytest.fixture(autouse=True)

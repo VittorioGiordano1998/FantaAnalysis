@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from entities import GROUP_LABELS, ROLE_GROUP, ROLE_LABELS, Role, RoleGroup, TakenPick
+from entities import GROUP_LABELS, ROLE_GROUP, ROLE_LABELS, RoleGroup, TakenPick
 from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import cache_mtime, get_quotazioni
@@ -35,6 +35,7 @@ from ui_common import (
     get_players,
     get_state,
     refresh_flag,
+    render_formation,
     set_state,
     slot_tuple,
     state_snapshot,
@@ -48,10 +49,7 @@ from utility import (
     coverage_recommendations,
     coverage_suggestions,
     easy_candidates,
-    formation_positions,
-    missing_roles,
     opponent_outlook,
-    player_roles,
     team_strengths_from_players,
     utility_score,
     week_coverage,
@@ -287,22 +285,7 @@ def _render_formazione() -> None:
     own_players = [p for p in players if p.url in own_urls]
     slots = slots_remaining(state, players)
 
-    for line in formation_positions(module, own_players):
-        st.caption(GROUP_LABELS[line.group])
-        cols = st.columns(len(line.positions))
-        for index, col in enumerate(cols):
-            slot = line.positions[index]
-            with col.container(border=True):
-                if slot.player is not None:
-                    st.markdown(f"**{slot.player.name}**")
-                    st.caption(slot.player.team_name)
-                    st.caption(_role_codes(player_roles(slot.player)))
-                else:
-                    st.markdown("—")
-                    st.caption(ROLE_LABELS[slot.role])
-        missing = missing_roles(line)
-        if missing:
-            st.caption("Mancano: " + ", ".join(ROLE_LABELS[Role(role)] for role in missing))
+    render_formation(module, own_players)
     owned = " · ".join(
         f"{GROUP_SHORT[group]} {ROSA_SLOTS[group] - slots.get(group, 0)}/{ROSA_SLOTS[group]}"
         for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A)
@@ -324,11 +307,6 @@ def _module_selector() -> str:
     module = st.selectbox("Modulo", options, index=index)
     st.session_state.modulo = module
     return module
-
-
-def _role_codes(roles: tuple[Role, ...]) -> str:
-    """Codici ruolo compatti come sul listone (es. "E/W")."""
-    return "/".join(role.value.upper() for role in roles)
 
 
 def _app_version() -> str:

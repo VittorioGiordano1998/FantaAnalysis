@@ -6,15 +6,17 @@ JSON restano nei moduli data; il calcolo in logic.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import streamlit as st
 
-from entities import AuctionState, Player, RoleGroup, attach_stats
+from entities import GROUP_LABELS, ROLE_LABELS, AuctionState, Player, Role, RoleGroup, attach_stats
 from fetch_fixtures import read_league_context, read_remaining_calendar
 from fetch_quotazioni import read_players
 from fetch_stats import read_season_stats
 from projection import LeagueContext
 from state import load_state, save_state, slots_remaining, spent_budget
-from utility import TeamCalendar
+from utility import TeamCalendar, formation_positions, missing_roles, player_roles
 
 STATE_KEY = "asta"
 REFRESH_KEY = "aggiorna_dati"
@@ -75,3 +77,33 @@ def state_snapshot(
 def slot_tuple(slots: dict[RoleGroup, int]) -> tuple[tuple[str, int], ...]:
     """Slot come tupla ordinata (hashabile) per le chiavi cache."""
     return tuple(sorted((group.value, count) for group, count in slots.items()))
+
+
+def role_codes(roles: tuple[Role, ...]) -> str:
+    """Codici ruolo compatti come sul listone (es. "E/W")."""
+    return "/".join(role.value.upper() for role in roles)
+
+
+def render_formation(module: str, players: Sequence[Player]) -> None:
+    """Disegna la formazione del modulo con i giocatori dati (XI o rosa).
+
+    Una riga per gruppo ruolo con le posizioni del template: nei posti
+    occupati nome, squadra e codici multiruolo del giocatore; nei posti
+    scoperti "—" con il ruolo richiesto e la riga "Mancano: ...".
+    """
+    for line in formation_positions(module, players):
+        st.caption(GROUP_LABELS[line.group])
+        cols = st.columns(len(line.positions))
+        for index, col in enumerate(cols):
+            slot = line.positions[index]
+            with col.container(border=True):
+                if slot.player is not None:
+                    st.markdown(f"**{slot.player.name}**")
+                    st.caption(slot.player.team_name)
+                    st.caption(role_codes(player_roles(slot.player)))
+                else:
+                    st.markdown("—")
+                    st.caption(ROLE_LABELS[slot.role])
+        missing = missing_roles(line)
+        if missing:
+            st.caption("Mancano: " + ", ".join(ROLE_LABELS[Role(role)] for role in missing))

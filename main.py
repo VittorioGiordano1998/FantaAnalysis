@@ -8,6 +8,7 @@ e input: la logica di rete/cache è delegata ai moduli data, il calcolo a
 """
 
 import logging
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -294,9 +295,18 @@ def _render_formazione() -> None:
     st.caption(f"Rosa presa: {owned} — il modulo si può cambiare in ogni momento.")
 
 
+def _app_version() -> str:
+    """Versione deployata (da version.txt), per la diagnosi."""
+    try:
+        return Path("version.txt").read_text(encoding="utf-8").strip()
+    except OSError:
+        return "?"
+
+
 def _render_sidebar() -> None:
     """Azioni di sistema: aggiorna dati, stato asta, report."""
     with st.sidebar:
+        st.caption(f"Versione: {_app_version()}")
         st.subheader("Dati")
         _render_aggiorna_dati()
         _render_export_import()

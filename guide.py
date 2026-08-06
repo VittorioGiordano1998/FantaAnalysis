@@ -116,6 +116,76 @@ def k_best_rosters(
     return tuple(squads)
 
 
+def coverage_completion(
+    player: Player,
+    players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+    limit: int | None = 12,
+) -> tuple[GreedyPick, ...]:
+    """Chi prendere (oltre a `player`) per coprire le giornate facili.
+
+    Greedy: parte dalle giornate facili di `player` e aggiunge a ogni passo
+    il giocatore rimasto (escluso `player`) che copre più giornate non
+    ancora coperte (a parità, più punti, poi costo minore); si ferma
+    quando tutte le giornate rimanenti sono coperte, quando nessuno
+    aggiunge più nulla o al raggiungimento di `limit` prese.
+
+    Args:
+        player: giocatore cercato (già nel pool dei rimasti).
+        players: giocatori ancora disponibili (pool).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+        limit: numero massimo di suggerimenti (default 12).
+
+    Returns:
+        I `GreedyPick` ordinati di presa, con costi e coperte cumulative.
+    """
+    covered: set[int] = set(
+        opp.matchweek
+        for opp in opponent_outlook(player, league, calendar, team_strengths)
+        if opp.easy is True
+    )
+    pool = [candidate for candidate in players if candidate.url != player.url]
+    picks: list[GreedyPick] = []
+    cost = 0
+    while pool and (limit is None or len(picks) < limit):
+        best: tuple[tuple, Player, frozenset[int]] | None = None
+        for candidate in pool:
+            easy = frozenset(
+                opp.matchweek
+                for opp in opponent_outlook(candidate, league, calendar, team_strengths)
+                if opp.easy is True
+            )
+            key = (
+                -len(easy - covered),
+                -project(candidate, league).total_points,
+                candidate.quote.qi or 0,
+            )
+            if best is None or key < best[0]:
+                best = (key, candidate, easy)
+        if best is None:
+            break
+        _, candidate, easy = best
+        added = easy - covered
+        if not added:
+            break
+        pool.remove(candidate)
+        cost += candidate.quote.qi or 0
+        covered |= easy
+        picks.append(
+            GreedyPick(
+                player=candidate,
+                added_weeks=tuple(sorted(added)),
+                covered_weeks=tuple(sorted(covered)),
+                cost=cost,
+            )
+        )
+    return tuple(picks)
+
+
 def position_candidates(
     role: Role,
     players: Sequence[Player],

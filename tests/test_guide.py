@@ -7,6 +7,7 @@ modello MILP usa slot ridotti per rendere i test veloci e determinati.
 from entities import Player, Quote, Role, RoleGroup
 from guide import (
     beam_combinations,
+    coverage_completion,
     greedy_cover,
     k_best_rosters,
     optimize_roster_coverage,
@@ -243,3 +244,58 @@ def test_beam_combinations_skips_duplicate_players():
     for combo in combos:
         urls = [player.url for player in combo.players]
         assert len(urls) == len(set(urls))
+
+
+def _completion_scenario() -> tuple[list[Player], LeagueContext, dict[str, TeamCalendar]]:
+    """A copre 4-5, B solo 4, C solo 5."""
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "A": _calendar("A", (4, "1"), (5, "1")),
+        "B": _calendar("B", (4, "1"), (5, "3")),
+        "C": _calendar("C", (4, "3"), (5, "1")),
+        "D": _calendar("D", (4, "3"), (5, "3")),
+    }
+    players = [
+        _player("PC_A", Role.PC, "A", "/p/pca"),
+        _player("C_B", Role.C, "B", "/p/cb"),
+        _player("DC_C", Role.DC, "C", "/p/dcc"),
+        _player("POR_D", Role.POR, "D", "/p/pord"),
+    ]
+    return players, league, calendar
+
+
+def test_coverage_completion_starts_from_player_weeks():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, players, league, calendar)
+    assert len(picks) == 1
+    assert picks[0].player.url == "/p/pca"
+    assert picks[0].added_weeks == (5,)
+    assert picks[0].covered_weeks == (4, 5)
+
+
+def test_coverage_completion_excludes_selected_player():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/pca")
+    picks = coverage_completion(player, players, league, calendar)
+    assert all(pick.player.url != player.url for pick in picks)
+    assert picks == ()
+
+
+def test_coverage_completion_stops_when_no_more_weeks():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, [player, players[3]], league, calendar)
+    assert picks == ()
+
+
+def test_coverage_completion_respects_limit():
+    players, league, calendar = _completion_scenario()
+    player = next(p for p in players if p.url == "/p/cb")
+    picks = coverage_completion(player, players, league, calendar, limit=1)
+    assert len(picks) == 1

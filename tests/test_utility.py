@@ -11,10 +11,13 @@ from entities import Player, Quote, Role, RoleGroup
 from projection import LeagueContext, TeamContext
 from utility import (
     MODULES,
+    CalendarWeek,
     TeamCalendar,
+    easy_candidates,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
+    week_coverage,
 )
 
 FULL_SLOTS = {
@@ -60,6 +63,14 @@ def _league(teams: list[TeamContext], gf: float = 1.0, ga: float = 1.0) -> Leagu
         teams={team.team_id: team for team in teams},
         league_gf_per_match=gf,
         league_ga_per_match=ga,
+    )
+
+
+def _calendar(team_id: str, *weeks: tuple[int, str]) -> TeamCalendar:
+    """TeamCalendar da coppie (matchweek, opponent_id)."""
+    return TeamCalendar(
+        team_id=team_id,
+        weeks=tuple(CalendarWeek(matchweek=mw, opponent_id=opp) for mw, opp in weeks),
     )
 
 
@@ -196,7 +207,7 @@ def test_full_calendar_counts_opponents_beyond_five_weeks():
         ]
     )
     calendar = {
-        "A": TeamCalendar("A", ("3", "3", "3", "3", "3", "3", "3", "1")),
+        "A": _calendar("A", *((4 + i, "3") for i in range(7)), (11, "1")),
     }
     player = _player("PC1", Role.PC, "A", "/p/pc1")
     utility = utility_score(player, league, FULL_SLOTS, [], "4-3-3", calendar)
@@ -205,7 +216,7 @@ def test_full_calendar_counts_opponents_beyond_five_weeks():
 
 def test_unknown_strength_is_neutral():
     league = _league([])
-    calendar = {"A": TeamCalendar("A", ("1", "1", "1"))}
+    calendar = {"A": _calendar("A", (4, "1"), (5, "1"), (6, "1"))}
     player = _player("PC1", Role.PC, "A", "/p/pc1")
     utility = utility_score(player, league, FULL_SLOTS, [], "4-3-3", calendar)
     outlook = opponent_outlook(player, league, calendar)
@@ -215,7 +226,7 @@ def test_unknown_strength_is_neutral():
 
 def test_proxy_strengths_fallback_preseason():
     league = _league([], gf=None, ga=None)
-    calendar = {"A": TeamCalendar("A", ("1", "3"))}
+    calendar = {"A": _calendar("A", (4, "1"), (5, "3"))}
     strengths = {"1": 50.0, "3": 200.0, "A": 120.0}
     player = _player("PC1", Role.PC, "A", "/p/pc1")
     outlook = opponent_outlook(player, league, calendar, strengths)
@@ -257,10 +268,89 @@ def test_coverage_penalized_on_full_calendar():
         ]
     )
     calendar = {
-        "A": TeamCalendar("A", ("3", "3", "3", "3", "3", "3", "3", "1")),
-        "B": TeamCalendar("B", ("1", "1", "1", "1", "1", "1", "1", "1")),
+        "A": _calendar("A", *((4 + i, "3") for i in range(7)), (11, "1")),
+        "B": _calendar("B", *((4 + i, "1") for i in range(8))),
     }
     player = _player("PC1", Role.PC, "A", "/p/pc1")
     own = [_player("PC2", Role.PC, "B", "/p/pc2")]
     utility = utility_score(player, league, FULL_SLOTS, own, "4-3-3", calendar)
     assert utility.coverage == pytest.approx(0.0)
+
+
+def test_outlook_carries_matchweek():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("A", "Atalanta", None, None, ()),
+        ]
+    )
+    calendar = {"A": _calendar("A", (4, "1"), (5, "3"))}
+    player = _player("PC1", Role.PC, "A", "/p/pc1")
+    outlook = opponent_outlook(player, league, calendar)
+    assert [(opp.matchweek, opp.easy) for opp in outlook] == [(4, True), (5, False)]
+
+
+def test_week_coverage_counts_easy_games_per_matchweek():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "B": _calendar("B", (4, "1"), (5, "3")),
+        "C": _calendar("C", (4, "3"), (5, "1")),
+    }
+    own = [_player("PC2", Role.PC, "B", "/p/pc2"), _player("PC3", Role.PC, "C", "/p/pc3")]
+    coverage = week_coverage(own, league, calendar)
+    assert [(week.matchweek, week.easy_count, week.present_count) for week in coverage] == [
+        (4, 1, 2),
+        (5, 1, 2),
+    ]
+    assert not any(week.uncovered for week in coverage)
+
+
+def test_week_coverage_flags_uncovered_weeks():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+        ]
+    )
+    calendar = {"B": _calendar("B", (4, "3"), (5, "3"))}
+    own = [_player("PC2", Role.PC, "B", "/p/pc2")]
+    coverage = week_coverage(own, league, calendar)
+    assert [(week.matchweek, week.easy_count, week.uncovered) for week in coverage] == [
+        (4, 0, True),
+        (5, 0, True),
+    ]
+
+
+def test_week_coverage_empty_without_own_players():
+    league = _league([])
+    assert week_coverage([], league) == ()
+
+
+def test_easy_candidates_filters_by_matchweek():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("4", "AttaccoDebole", 0.5, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "A": _calendar("A", (4, "1"), (5, "3")),
+        "B": _calendar("B", (4, "3"), (5, "1")),
+        "C": _calendar("C", (4, "4"), (5, "3")),
+    }
+    pc_a = _player("PC_A", Role.PC, "A", "/p/pc_a")
+    pc_b = _player("PC_B", Role.PC, "B", "/p/pc_b")
+    dc_c = _player("DC_C", Role.DC, "C", "/p/dc_c")
+    players = [pc_a, pc_b, dc_c]
+
+    at_four = easy_candidates(4, players, league, calendar)
+    assert {p.url for p in at_four} == {pc_a.url, dc_c.url}
+    at_five = easy_candidates(5, players, league, calendar)
+    assert {p.url for p in at_five} == {pc_b.url}

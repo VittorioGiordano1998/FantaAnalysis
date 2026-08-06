@@ -12,7 +12,7 @@ import logging
 import pandas as pd
 import streamlit as st
 
-from entities import RoleGroup, TakenPick
+from entities import GROUP_LABELS, ROLE_GROUP, ROLE_LABELS, RoleGroup, TakenPick
 from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import cache_mtime, get_quotazioni
@@ -41,9 +41,11 @@ from ui_common import (
 from utility import (
     MODULES,
     UtilityScore,
+    easy_candidates,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
+    week_coverage,
 )
 
 logger = logging.getLogger(__name__)
@@ -111,11 +113,11 @@ def _advice_for(
     own_team: str,
     module: str,
     force: bool,
-) -> tuple[SpendingLimit, UtilityScore, float, tuple[str, ...], bool]:
+) -> tuple[SpendingLimit, UtilityScore, float, tuple[int, ...], bool]:
     """Consiglio per un giocatore (chiave = snapshot asta + modulo).
 
     Returns:
-        (limite di spesa, utilità, punti attesi, avversari facili,
+        (limite di spesa, utilità, punti attesi, giornate facili,
         medie di lega disponibili).
     """
     players = get_players(force)
@@ -146,9 +148,9 @@ def _advice_for(
     )
     points = project(player, league).total_points
     outlook = opponent_outlook(player, league, calendars, strengths)
-    easy = tuple(opp.team_name for opp in outlook if opp.easy is True)
+    easy_weeks = tuple(opp.matchweek for opp in outlook if opp.easy is True)
     has_results = league.league_gf_per_match is not None
-    return limit, utility, points, easy, has_results
+    return limit, utility, points, easy_weeks, has_results
 
 
 def _render_aggiorna_dati() -> None:
@@ -314,7 +316,7 @@ def _render_consigli() -> None:
         )
         slots = slots_remaining(state, players)
         remaining = state.budget - spent_budget(state)
-        limit, utility, points, easy, has_results = _advice_for(
+        limit, utility, points, easy_weeks, has_results = _advice_for(
             by_label[label],
             taken_tuple,
             remaining,
@@ -334,8 +336,8 @@ def _render_consigli() -> None:
         f"Calendario: {utility.calendar_ease * 100:.0f}% · "
         f"Copertura: {utility.coverage * 100:.0f}%"
     )
-    if easy:
-        st.caption(f"Avversari facili: {', '.join(easy)}")
+    if easy_weeks:
+        st.caption(f"Giornate facili: {', '.join(str(week) for week in easy_weeks)}")
     elif not has_results:
         st.caption(
             "Stagione non iniziata: forza squadra stimata dal listone — "
@@ -343,6 +345,135 @@ def _render_consigli() -> None:
         )
     else:
         st.caption("Nessun avversario facile tra le giornate rimanenti.")
+
+
+@st.cache_data(show_spinner=False)
+def _easy_at_week(
+    matchweek: int,
+    role_group: str,
+    taken: tuple[tuple[str, str, int | None], ...],
+    force: bool,
+) -> tuple[tuple[str, str, str, int | None, float], ...]:
+    """Rimasti con partita facile alla giornata (chiave = giornata + filtro).
+
+    Returns:
+        (nome, squadra, ruolo, qi, punti attesi) per ogni candidato.
+    """
+    players = get_players(force)
+    league = get_league(force)
+    calendars = get_calendars(force)
+    strengths = team_strengths_from_players(players)
+    taken_set = frozenset(url for url, _, _ in taken)
+    remaining = [p for p in players if p.url not in taken_set]
+    if role_group:
+        group = RoleGroup(role_group)
+        remaining = [p for p in remaining if ROLE_GROUP[p.role] is group]
+    candidates = easy_candidates(matchweek, remaining, league, calendars, strengths)
+    return tuple(
+        (
+            player.name,
+            player.team_name,
+            ROLE_LABELS[player.role],
+            player.quote.qi,
+            project(player, league).total_points,
+        )
+        for player in candidates
+    )
+
+
+def _render_copertura() -> None:
+    """Copertura delle giornate facili per la rosa + ricerca inversa."""
+    st.subheader("Copertura giornate facili")
+    state = get_state()
+    players = get_players(refresh_flag())
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
+    league = get_league(refresh_flag())
+    calendars = get_calendars(refresh_flag())
+    strengths = team_strengths_from_players(players)
+    own_urls = frozenset(
+        pick.player_url for pick in state.taken if pick.owner == state.own_team
+    )
+    own_players = [p for p in players if p.url in own_urls]
+
+    coverage = week_coverage(own_players, league, calendars, strengths)
+    if coverage:
+        frame = pd.DataFrame(
+            [
+                {
+                    "giornata": week.matchweek,
+                    "facili": week.easy_count,
+                    "giocatori": week.present_count,
+                    "stato": "scoperta" if week.uncovered else "",
+                }
+                for week in coverage
+            ]
+        )
+        st.caption(
+            "Partite facili coperte per giornata (scoperta = presenti senza facili)"
+        )
+        st.dataframe(frame, hide_index=True, width="stretch")
+        uncovered = sum(1 for week in coverage if week.uncovered)
+        if uncovered:
+            st.caption(f"{uncovered} giornate scoperte: cerca qui sotto chi coprirle.")
+    else:
+        st.caption(
+            "Nessun giocatore della tua squadra ancora: la copertura si attiva "
+            "con le prime prese (la ricerca qui sotto funziona già)."
+        )
+
+    if coverage:
+        weeks = [week.matchweek for week in coverage]
+        default_index = next(
+            (i for i, week in enumerate(coverage) if week.uncovered), 0
+        )
+    else:
+        all_weeks = [cal.weeks for cal in calendars.values()]
+        weeks = [week.matchweek for week in max(all_weeks, key=len)] if all_weeks else []
+        default_index = 0
+    if not weeks:
+        st.info("Nessuna giornata valutabile: esegui 'Aggiorna dati'.")
+        return
+    col_week, col_role = st.columns(2)
+    week_label = col_week.selectbox(
+        "Giornata", weeks, index=default_index, key="copertura_week"
+    )
+    role_options = ["Tutti", *GROUP_LABELS.values()]
+    role_label = col_role.selectbox(
+        "Ruolo", role_options, key="copertura_role"
+    )
+    role_group = next(
+        (group.value for group, label in GROUP_LABELS.items() if label == role_label),
+        "",
+    )
+    taken_tuple = tuple(
+        (pick.player_url, pick.owner, pick.price) for pick in state.taken
+    )
+    rows = _easy_at_week(week_label, role_group, taken_tuple, refresh_flag())
+    if not rows:
+        st.info("Nessun giocatore rimasto con partita facile in questa giornata.")
+        return
+    candidates = pd.DataFrame(
+        rows,
+        columns=["name", "team", "role", "qi", "points"],
+    ).sort_values("points", ascending=False)
+    st.dataframe(
+        candidates,
+        column_config={
+            "name": st.column_config.TextColumn("Nome"),
+            "team": st.column_config.TextColumn("Squadra"),
+            "role": st.column_config.TextColumn("Ruolo"),
+            "qi": st.column_config.NumberColumn("QI"),
+            "points": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
+        },
+        hide_index=True,
+        width="stretch",
+    )
+    st.caption(
+        f"{len(candidates)} giocatori con partita facile alla giornata "
+        f"{week_label} — ordinati per punti attesi"
+    )
 
 
 def _render_quotazioni() -> None:
@@ -392,6 +523,7 @@ def main() -> None:
     _render_aggiorna_dati()
     _render_stato_asta()
     _render_consigli()
+    _render_copertura()
     _render_quotazioni()
 
 

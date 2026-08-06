@@ -29,7 +29,7 @@ from fetch_common import (
     write_csv,
 )
 from projection import NEXT_WEEKS, LeagueContext, TeamContext
-from utility import TeamCalendar
+from utility import CalendarWeek, TeamCalendar
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +206,7 @@ def read_league_context(cache_dir: Path | None = None) -> LeagueContext:
 def read_remaining_calendar(
     cache_dir: Path | None = None,
 ) -> dict[str, TeamCalendar]:
-    """Calendario rimanente per squadra: gli avversari delle giornate future.
+    """Calendario rimanente per squadra: gli avversari delle giornate ancora da giocare.
 
     La giornata corrente è l'ultima giocata + 1 (1 se nessuna giocata);
     ogni squadra ha un avversario per giornata rimanente, ordinato per
@@ -226,7 +226,7 @@ def read_remaining_calendar(
     if frame.empty:
         return {}
     current_matchweek = _current_matchweek(frame)
-    future = frame[frame["matchweek"].astype(int) > current_matchweek]
+    future = frame[frame["matchweek"].astype(int) >= current_matchweek]
     calendars: dict[str, TeamCalendar] = {}
     team_ids = sorted(
         set(future["home_id"].astype(str)) | set(future["away_id"].astype(str))
@@ -236,11 +236,16 @@ def read_remaining_calendar(
             (future["home_id"].astype(str) == team_id)
             | (future["away_id"].astype(str) == team_id)
         ].sort_values(["matchweek", "date"])
-        opponents = tuple(
-            str(row["away_id"]) if str(row["home_id"]) == team_id else str(row["home_id"])
+        weeks = tuple(
+            CalendarWeek(
+                matchweek=int(row["matchweek"]),
+                opponent_id=str(row["away_id"])
+                if str(row["home_id"]) == team_id
+                else str(row["home_id"]),
+            )
             for _, row in matches.iterrows()
         )
-        calendars[team_id] = TeamCalendar(team_id=team_id, opponents=opponents)
+        calendars[team_id] = TeamCalendar(team_id=team_id, weeks=weeks)
     return calendars
 
 

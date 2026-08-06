@@ -17,6 +17,7 @@ from fetch_fixtures import (
     parse_calendar_html,
     read_calendario_csv,
     read_league_context,
+    read_remaining_calendar,
     rows_to_csv,
 )
 
@@ -103,6 +104,27 @@ def test_read_league_context_with_played_results(tmp_path):
     assert team_a.gf_per_match == pytest.approx(2.0)
     assert team_a.ga_per_match == pytest.approx(1.0)
     assert team_a.upcoming_opponents == ("B",) * 5
+
+
+def test_read_remaining_calendar_missing_cache_returns_empty(tmp_path):
+    assert read_remaining_calendar(cache_dir=tmp_path) == {}
+
+
+def test_read_remaining_calendar_weeks_after_current(tmp_path):
+    rows = _synthetic_season(played_weeks=2)
+    rows_to_csv(rows, tmp_path / CACHE_FILE.name)
+    calendars = read_remaining_calendar(cache_dir=tmp_path)
+    assert set(calendars) == {"A", "B", "C", "D"}
+    team_a = calendars["A"]
+    assert [(week.matchweek, week.opponent_id) for week in team_a.weeks] == [
+        (3, "B"),
+        (4, "B"),
+        (5, "B"),
+        (6, "B"),
+        (7, "B"),
+        (8, "B"),
+    ]
+    assert len(calendars["C"].weeks) == 6
 
 
 def _synthetic_season(*, played_weeks: int) -> list[FixtureRow]:

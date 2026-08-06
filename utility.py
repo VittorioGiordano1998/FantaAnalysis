@@ -30,11 +30,19 @@ MODULES: Mapping[str, tuple[int, int, int, int]] = {
 
 
 @dataclass(frozen=True)
+class CalendarWeek:
+    """Un avversario futuro con la sua giornata di campionato."""
+
+    matchweek: int
+    opponent_id: str
+
+
+@dataclass(frozen=True)
 class TeamCalendar:
-    """Calendario rimanente di una squadra: un avversario per giornata."""
+    """Calendario rimanente di una squadra, una settimana per giornata."""
 
     team_id: str
-    opponents: tuple[str, ...]
+    weeks: tuple[CalendarWeek, ...]
 
 
 @dataclass(frozen=True)
@@ -46,8 +54,23 @@ class OpponentOutlook:
     """
 
     team_name: str
+    matchweek: int
     strength: float | None
     easy: bool | None
+
+
+@dataclass(frozen=True)
+class WeekCoverage:
+    """Copertura di una giornata: facili coperte e giocatori propri presenti."""
+
+    matchweek: int
+    easy_count: int
+    present_count: int
+
+    @property
+    def uncovered(self) -> bool:
+        """Vero se la giornata è giocata da qualcuno ma senza partite facili."""
+        return self.present_count > 0 and self.easy_count == 0
 
 
 @dataclass(frozen=True)
@@ -153,12 +176,15 @@ def opponent_outlook(
     team_calendar = calendar.get(player.team_id) if calendar else None
     context = league.teams.get(player.team_id)
     if team_calendar is not None:
-        opponents = team_calendar.opponents
+        weeks = [(week.matchweek, week.opponent_id) for week in team_calendar.weeks]
     elif context is not None:
-        opponents = context.upcoming_opponents
+        weeks = [
+            (league.current_matchweek + index + 1, opponent_id)
+            for index, opponent_id in enumerate(context.upcoming_opponents)
+        ]
     else:
         return ()
-    if not opponents:
+    if not weeks:
         return ()
     benchmark = _league_benchmark(player, league)
     if benchmark is None and team_strengths:
@@ -166,7 +192,7 @@ def opponent_outlook(
         if values:
             benchmark = sum(values) / len(values)
     outlook: list[OpponentOutlook] = []
-    for opponent_id in opponents:
+    for matchweek, opponent_id in weeks:
         opponent = league.teams.get(opponent_id)
         strength = _opponent_strength(player, opponent) if opponent else None
         if strength is None and team_strengths:
@@ -174,6 +200,7 @@ def opponent_outlook(
         outlook.append(
             OpponentOutlook(
                 team_name=opponent.team_name if opponent else opponent_id,
+                matchweek=matchweek,
                 strength=strength,
                 easy=_is_easy(strength, benchmark),
             )
@@ -205,6 +232,80 @@ def _slot_need(
     return max(0.0, min(1.0, 1.0 - left / expected))
 
 
+def easy_candidates(
+    matchweek: int,
+    players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+) -> tuple[Player, ...]:
+    """Giocatori con avversario facile in una specifica giornata.
+
+    Args:
+        matchweek: giornata da valutare.
+        players: giocatori da filtrare (es. i rimasti).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+
+    Returns:
+        I giocatori con partita facile in quella giornata (ordine di input).
+    """
+    return tuple(
+        player
+        for player in players
+        if any(
+            opp.matchweek == matchweek and opp.easy is True
+            for opp in opponent_outlook(player, league, calendar, team_strengths)
+        )
+    )
+
+
+def week_coverage(
+    own_players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+) -> tuple[WeekCoverage, ...]:
+    """Copertura delle giornate rimanenti con i giocatori della propria squadra.
+
+    Per ogni giornata rimanente: quanti giocatori propri giocano (presenti)
+    e quanti affrontano un avversario facile per il loro ruolo.
+
+    Args:
+        own_players: giocatori già presi dalla propria squadra.
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+
+    Returns:
+        Una `WeekCoverage` per giornata rimanente, ordinate per matchweek.
+    """
+    outlooks = [
+        opponent_outlook(own, league, calendar, team_strengths) for own in own_players
+    ]
+    weeks = max((len(outlook) for outlook in outlooks), default=0)
+    if weeks == 0:
+        return ()
+    matchweeks = [0] * weeks
+    easy_counts = [0] * weeks
+    present = [0] * weeks
+    for outlook in outlooks:
+        for week, opp in enumerate(outlook):
+            matchweeks[week] = opp.matchweek
+            present[week] += 1
+            if opp.easy is True:
+                easy_counts[week] += 1
+    return tuple(
+        WeekCoverage(
+            matchweek=matchweeks[week],
+            easy_count=easy_counts[week],
+            present_count=present[week],
+        )
+        for week in range(weeks)
+    )
+
+
 def _coverage(
     outlook: tuple[OpponentOutlook, ...],
     league: LeagueContext,
@@ -218,43 +319,17 @@ def _coverage(
     giocatori propri che quella settimana NON giocano già un avversario
     facile; media sulle settimane facili (0.5 neutro se nessuna).
     """
-    own_easy, own_present = _own_coverage_by_week(
-        own_players, league, calendar, team_strengths
-    )
+    coverage = week_coverage(own_players, league, calendar, team_strengths)
     gains = [
-        1.0 - own_easy[week] / own_present[week]
-        for week, opp in enumerate(outlook)
-        if opp.easy is True and week < len(own_present) and own_present[week] > 0
+        1.0 - coverage[index].easy_count / coverage[index].present_count
+        for index, opp in enumerate(outlook)
+        if opp.easy is True
+        and index < len(coverage)
+        and coverage[index].present_count > 0
     ]
     if not gains:
         return 0.5
     return max(0.0, min(1.0, sum(gains) / len(gains)))
-
-
-def _own_coverage_by_week(
-    own_players: Sequence[Player],
-    league: LeagueContext,
-    calendar: Mapping[str, TeamCalendar] | None,
-    team_strengths: Mapping[str, float] | None,
-) -> tuple[list[int], list[int]]:
-    """Per ogni settimana rimanente: giocatori propri con avversario facile
-    (e totale dei presenti)."""
-    weeks = max(
-        (
-            len(opponent_outlook(own, league, calendar, team_strengths))
-            for own in own_players
-        ),
-        default=0,
-    )
-    easy_counts = [0] * weeks
-    present = [0] * weeks
-    for own in own_players:
-        outlook = opponent_outlook(own, league, calendar, team_strengths)
-        for week, opp in enumerate(outlook):
-            present[week] += 1
-            if opp.easy is True:
-                easy_counts[week] += 1
-    return easy_counts, present
 
 
 def _opponent_strength(player: Player, opponent) -> float | None:

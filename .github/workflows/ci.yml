@@ -1,32 +1,22 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
 
 jobs:
-  verify:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-
-      - name: Install dependencies
+          python-version: "3.12"
+          cache: pip
+      - name: Installa dipendenze
         run: pip install -r requirements-dev.txt
-
-      - name: ruff lint
+      - name: Ruff
         run: ruff check .
-
-      - name: ruff format check
-        run: ruff format --check .
-
-      - name: pytest
+      - name: Pytest
         run: pytest

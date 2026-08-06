@@ -45,6 +45,7 @@ Da quel momento l'app è usabile durante l'asta come da progetto.
 | Aggiornare i dati | Pulsante **"Aggiorna dati"** (unica via di invalidazione delle cache). |
 | Stato asta dopo uno sleep/restart | Su Cloud il disco è **effimero**: esporta lo stato dalla sidebar prima di chiudere (**Esporta stato** → file `asta.json`) e reimportalo alla riapertura. |
 | Aggiornamenti del codice | Ogni `git push` su `main` ricompila l'app in automatico. |
+| Deploy via branch `deploy` | L'app è configurata sul branch `deploy` (workaround per il deploy incrementale corrotto di `main`): dopo ogni push aggiornare anche `deploy` con `git push origin main deploy`. Prima di pushare `deploy`, allinearlo: `git branch -f deploy main`. |
 | App addormentata | Il piano gratuito sospende l'app dopo inattività: basta riaprire l'URL (riattivazione in ~30-60 s). |
 | Cache persa dopo lo sleep | Semplicemente ripremere **"Aggiorna dati"** (le cache sono rigenerabili). |
 

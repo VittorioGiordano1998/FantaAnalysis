@@ -29,6 +29,7 @@ from state import (
     taken_urls,
 )
 from ui_common import (
+    get_calendars,
     get_league,
     get_players,
     get_state,
@@ -37,7 +38,13 @@ from ui_common import (
     slot_tuple,
     state_snapshot,
 )
-from utility import MODULES, UtilityScore, opponent_outlook, utility_score
+from utility import (
+    MODULES,
+    UtilityScore,
+    opponent_outlook,
+    team_strengths_from_players,
+    utility_score,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -104,11 +111,12 @@ def _advice_for(
     own_team: str,
     module: str,
     force: bool,
-) -> tuple[SpendingLimit, UtilityScore, float, tuple[str, ...]]:
+) -> tuple[SpendingLimit, UtilityScore, float, tuple[str, ...], bool]:
     """Consiglio per un giocatore (chiave = snapshot asta + modulo).
 
     Returns:
-        (limite di spesa, utilità, punti attesi, avversari facili).
+        (limite di spesa, utilità, punti attesi, avversari facili,
+        medie di lega disponibili).
     """
     players = get_players(force)
     league = get_league(force)
@@ -125,10 +133,22 @@ def _advice_for(
     )
     own_urls = frozenset(url for url, owner, _ in taken if owner == own_team)
     own_players = [p for p in players if p.url in own_urls]
-    utility = utility_score(player, league, slots_map, own_players, module)
+    calendars = get_calendars(force)
+    strengths = team_strengths_from_players(players)
+    utility = utility_score(
+        player,
+        league,
+        slots_map,
+        own_players,
+        module,
+        calendars,
+        strengths,
+    )
     points = project(player, league).total_points
-    easy = tuple(opp.team_name for opp in opponent_outlook(player, league) if opp.easy)
-    return limit, utility, points, easy
+    outlook = opponent_outlook(player, league, calendars, strengths)
+    easy = tuple(opp.team_name for opp in outlook if opp.easy is True)
+    has_results = league.league_gf_per_match is not None
+    return limit, utility, points, easy, has_results
 
 
 def _render_aggiorna_dati() -> None:
@@ -294,7 +314,7 @@ def _render_consigli() -> None:
         )
         slots = slots_remaining(state, players)
         remaining = state.budget - spent_budget(state)
-        limit, utility, points, easy = _advice_for(
+        limit, utility, points, easy, has_results = _advice_for(
             by_label[label],
             taken_tuple,
             remaining,
@@ -314,14 +334,15 @@ def _render_consigli() -> None:
         f"Calendario: {utility.calendar_ease * 100:.0f}% · "
         f"Copertura: {utility.coverage * 100:.0f}%"
     )
-    st.caption(
-        f"Punti attesi: {points:.1f} — "
-        + (
-            "Avversari facili: " + ", ".join(easy)
-            if easy
-            else "Nessun avversario facile nelle prossime 5 giornate."
+    if easy:
+        st.caption(f"Avversari facili: {', '.join(easy)}")
+    elif not has_results:
+        st.caption(
+            "Stagione non iniziata: forza squadra stimata dal listone — "
+            "i consigli sul calendario diventano più precisi a campionato avviato."
         )
-    )
+    else:
+        st.caption("Nessun avversario facile tra le giornate rimanenti.")
 
 
 def _render_quotazioni() -> None:

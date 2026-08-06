@@ -9,11 +9,12 @@ from __future__ import annotations
 import streamlit as st
 
 from entities import AuctionState, Player, RoleGroup, attach_stats
-from fetch_fixtures import read_league_context
+from fetch_fixtures import read_league_context, read_remaining_calendar
 from fetch_quotazioni import read_players
 from fetch_stats import read_season_stats
 from projection import LeagueContext
 from state import load_state, save_state, slots_remaining, spent_budget
+from utility import TeamCalendar
 
 STATE_KEY = "asta"
 REFRESH_KEY = "aggiorna_dati"
@@ -29,6 +30,12 @@ def get_players(force: bool) -> list[Player]:
 def get_league(force: bool) -> LeagueContext:
     """Contesto campionato per le proiezioni, chiave = flag aggiornamento."""
     return read_league_context()
+
+
+@st.cache_data(show_spinner=False)
+def get_calendars(force: bool) -> dict[str, TeamCalendar]:
+    """Calendario rimanente per squadra, chiave = flag aggiornamento."""
+    return read_remaining_calendar()
 
 
 def refresh_flag() -> bool:

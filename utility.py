@@ -2,9 +2,13 @@
 
 Pura computazione, nessun I/O: i dati arrivano come tipi condivisi. Il
 punteggio di utilità (0..1) combina tre componenti a peso uguale: bisogno
-di ruolo (slot residui vs modulo), facilità dei prossimi avversari e
-copertura delle partite facili rispetto ai giocatori già presi della
-propria squadra.
+di ruolo (slot residui vs modulo), facilità degli avversari su TUTTO il
+calendario rimanente e copertura delle partite facili rispetto ai
+giocatori già presi della propria squadra.
+
+A stagione non iniziata (nessuna media di lega) la forza squadra è
+stimata dal listone (`team_strengths_from_players`, media FVM per squadra);
+i valori ignoti pesano 0.5 (neutro) nella media.
 """
 
 from __future__ import annotations
@@ -15,7 +19,6 @@ from dataclasses import dataclass
 from entities import ROLE_GROUP, Player, RoleGroup
 from projection import LeagueContext
 
-NEXT_WEEKS = 5
 DEFAULT_MODULE = "4-3-3"
 
 MODULES: Mapping[str, tuple[int, int, int, int]] = {
@@ -27,12 +30,24 @@ MODULES: Mapping[str, tuple[int, int, int, int]] = {
 
 
 @dataclass(frozen=True)
+class TeamCalendar:
+    """Calendario rimanente di una squadra: un avversario per giornata."""
+
+    team_id: str
+    opponents: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class OpponentOutlook:
-    """Un avversario futuro con la sua forza e se è "facile" per il ruolo."""
+    """Un avversario futuro con la sua forza e se è "facile" per il ruolo.
+
+    `easy` è `None` quando la forza non è stimabile (nessun risultato e
+    nessun proxy): in aggregato vale 0.5 (neutro).
+    """
 
     team_name: str
     strength: float | None
-    easy: bool
+    easy: bool | None
 
 
 @dataclass(frozen=True)
@@ -45,35 +60,63 @@ class UtilityScore:
     coverage: float
 
 
+def team_strengths_from_players(players: Sequence[Player]) -> dict[str, float]:
+    """Forza squadra stimata dal listone: media FVM per squadra (0..1).
+
+    Usata come fallback pre-stagione quando non esistono risultati da cui
+    derivare le medie reali.
+
+    Args:
+        players: tutti i giocatori del listone.
+
+    Returns:
+        team_id → media FVM dei suoi giocatori (solo squadre presenti).
+    """
+    totals: dict[str, tuple[float, int]] = {}
+    for player in players:
+        fvm = player.quote.fvm
+        if fvm is None:
+            continue
+        prev = totals.get(player.team_id)
+        totals[player.team_id] = (
+            (prev[0] + float(fvm), prev[1] + 1) if prev else (float(fvm), 1)
+        )
+    return {team_id: total / count for team_id, (total, count) in totals.items()}
+
+
 def utility_score(
     player: Player,
     league: LeagueContext,
     slots_left: Mapping[RoleGroup, int],
     own_players: Sequence[Player],
     module: str = DEFAULT_MODULE,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
 ) -> UtilityScore:
     """Utilità di acquisto del giocatore per la propria squadra (0..1).
 
     Media di tre componenti a peso uguale:
     - bisogno di ruolo dagli slot residui vs quota del modulo;
-    - frazione dei prossimi `NEXT_WEEKS` avversari facili per il ruolo;
+    - frazione delle giornate rimanenti con avversario facile (ignote = 0.5);
     - copertura aggiunta delle settimane facili rispetto a `own_players`.
 
     Args:
         player: giocatore da valutare (deve essere nel pool dei rimasti).
-        league: contesto campionato (forze squadra + calendario).
+        league: contesto campionato (forze squadra, medie di lega).
         slots_left: slot di rosa residui per gruppo ruolo.
         own_players: giocatori già presi dalla propria squadra.
         module: preset modulo (chiave di `MODULES`).
+        calendar: calendario rimanente per squadra (default: prossimi 5
+            avversari di `league`, per compatibilità).
+        team_strengths: forza squadra stimata (fallback pre-stagione).
 
     Returns:
         Punteggio complessivo e componenti, ciascuna in [0, 1].
     """
-    outlook = opponent_outlook(player, league)
-    ease = [opp.easy for opp in outlook]
+    outlook = opponent_outlook(player, league, calendar, team_strengths)
     slot_need = _slot_need(player, slots_left, module)
-    calendar_ease = _mean(ease) if ease else 0.5
-    coverage = _coverage(ease, player, league, own_players)
+    calendar_ease = _ease_mean(outlook)
+    coverage = _coverage(outlook, league, calendar, own_players, team_strengths)
     score = (slot_need + calendar_ease + coverage) / 3.0
     return UtilityScore(
         score=score,
@@ -83,35 +126,56 @@ def utility_score(
     )
 
 
-def opponent_outlook(player: Player, league: LeagueContext) -> tuple[OpponentOutlook, ...]:
-    """I prossimi `NEXT_WEEKS` avversari con forza e flag "facile".
+def opponent_outlook(
+    player: Player,
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+) -> tuple[OpponentOutlook, ...]:
+    """Gli avversari rimanenti con forza e flag "facile", in ordine di giornata.
 
     Un avversario è facile per attaccanti e centrocampisti quando la sua
     difesa (gol subiti a partita) è sotto la media di lega; per difensori e
-    portieri quando il suo attacco (gol fatti a partita) è sotto la media.
+    portieri quando il suo attacco (gol fatti) è sotto la media. Senza medie
+    di lega si usa `team_strengths` (se presente) con benchmark medio; senza
+    alcun dato la forza è `None` e `easy` è `None`.
 
     Args:
         player: giocatore di cui si valuta il calendario.
         league: contesto campionato.
+        calendar: calendario rimanente per squadra (default: prossimi 5
+            avversari di `league`).
+        team_strengths: forza squadra stimata (fallback pre-stagione).
 
     Returns:
-        Una `OpponentOutlook` per avversario (vuota se mancano i dati).
+        Una `OpponentOutlook` per giornata rimanente (vuota se mancano i dati).
     """
+    team_calendar = calendar.get(player.team_id) if calendar else None
     context = league.teams.get(player.team_id)
-    if context is None or not context.upcoming_opponents:
+    if team_calendar is not None:
+        opponents = team_calendar.opponents
+    elif context is not None:
+        opponents = context.upcoming_opponents
+    else:
         return ()
+    if not opponents:
+        return ()
+    benchmark = _league_benchmark(player, league)
+    if benchmark is None and team_strengths:
+        values = [v for v in team_strengths.values() if v is not None]
+        if values:
+            benchmark = sum(values) / len(values)
     outlook: list[OpponentOutlook] = []
-    for opponent_id in context.upcoming_opponents[:NEXT_WEEKS]:
+    for opponent_id in opponents:
         opponent = league.teams.get(opponent_id)
-        if opponent is None:
-            continue
-        strength = _opponent_strength(player, opponent)
-        easy = _is_easy(strength, _league_benchmark(player, league))
+        strength = _opponent_strength(player, opponent) if opponent else None
+        if strength is None and team_strengths:
+            strength = team_strengths.get(opponent_id)
         outlook.append(
             OpponentOutlook(
-                team_name=opponent.team_name,
+                team_name=opponent.team_name if opponent else opponent_id,
                 strength=strength,
-                easy=easy,
+                easy=_is_easy(strength, benchmark),
             )
         )
     return tuple(outlook)
@@ -142,10 +206,11 @@ def _slot_need(
 
 
 def _coverage(
-    ease: list[bool],
-    player: Player,
+    outlook: tuple[OpponentOutlook, ...],
     league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None,
     own_players: Sequence[Player],
+    team_strengths: Mapping[str, float] | None,
 ) -> float:
     """Copertura aggiunta nelle settimane facili del giocatore.
 
@@ -153,11 +218,13 @@ def _coverage(
     giocatori propri che quella settimana NON giocano già un avversario
     facile; media sulle settimane facili (0.5 neutro se nessuna).
     """
-    own_easy, own_present = _own_coverage_by_week(own_players, league)
+    own_easy, own_present = _own_coverage_by_week(
+        own_players, league, calendar, team_strengths
+    )
     gains = [
         1.0 - own_easy[week] / own_present[week]
-        for week, is_easy in enumerate(ease)
-        if is_easy and own_present[week] > 0
+        for week, opp in enumerate(outlook)
+        if opp.easy is True and week < len(own_present) and own_present[week] > 0
     ]
     if not gains:
         return 0.5
@@ -167,18 +234,25 @@ def _coverage(
 def _own_coverage_by_week(
     own_players: Sequence[Player],
     league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None,
+    team_strengths: Mapping[str, float] | None,
 ) -> tuple[list[int], list[int]]:
-    """Per ognuna delle prossime settimane: giocatori propri con avversario
-    facile (e totale dei presenti)."""
-    easy_counts = [0] * NEXT_WEEKS
-    present = [0] * NEXT_WEEKS
+    """Per ogni settimana rimanente: giocatori propri con avversario facile
+    (e totale dei presenti)."""
+    weeks = max(
+        (
+            len(opponent_outlook(own, league, calendar, team_strengths))
+            for own in own_players
+        ),
+        default=0,
+    )
+    easy_counts = [0] * weeks
+    present = [0] * weeks
     for own in own_players:
-        outlook = opponent_outlook(own, league)
+        outlook = opponent_outlook(own, league, calendar, team_strengths)
         for week, opp in enumerate(outlook):
-            if week >= NEXT_WEEKS:
-                break
             present[week] += 1
-            if opp.easy:
+            if opp.easy is True:
                 easy_counts[week] += 1
     return easy_counts, present
 
@@ -197,18 +271,22 @@ def _league_benchmark(player: Player, league: LeagueContext) -> float | None:
     return league.league_gf_per_match
 
 
-def _is_easy(strength: float | None, benchmark: float | None) -> bool:
-    """Vero se l'avversario è sotto la media di lega (dati assenti → False)."""
+def _is_easy(strength: float | None, benchmark: float | None) -> bool | None:
+    """True se sotto la media di lega; None se il confronto non è possibile."""
     if strength is None or benchmark is None or benchmark <= 0:
-        return False
+        return None
     return strength < benchmark
 
 
-def _mean(values: list[bool]) -> float:
-    """Frazione di True, 0.0 se vuota."""
-    if not values:
-        return 0.0
-    return sum(values) / len(values)
+def _ease_mean(outlook: tuple[OpponentOutlook, ...]) -> float:
+    """Frazione di avversari facili; ignoti = 0.5; vuoto = 0.5."""
+    if not outlook:
+        return 0.5
+    total = sum(
+        1.0 if opp.easy is True else 0.0 if opp.easy is False else 0.5
+        for opp in outlook
+    )
+    return total / len(outlook)
 
 
 _GROUP_INDEX: Mapping[RoleGroup, int] = {

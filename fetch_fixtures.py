@@ -29,6 +29,7 @@ from fetch_common import (
     write_csv,
 )
 from projection import NEXT_WEEKS, LeagueContext, TeamContext
+from utility import TeamCalendar
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +191,7 @@ def read_league_context(cache_dir: Path | None = None) -> LeagueContext:
         return LeagueContext(season="", current_matchweek=1, teams={})
     season = str(frame["season"].iloc[0])
     played = frame[frame["status"] != 0]
-    current_matchweek = int(played["matchweek"].max()) + 1 if not played.empty else 1
+    current_matchweek = _current_matchweek(frame)
     teams = _team_contexts(frame, played, current_matchweek)
     league_gf, league_ga = _league_averages(played)
     return LeagueContext(
@@ -200,6 +201,53 @@ def read_league_context(cache_dir: Path | None = None) -> LeagueContext:
         league_gf_per_match=league_gf,
         league_ga_per_match=league_ga,
     )
+
+
+def read_remaining_calendar(
+    cache_dir: Path | None = None,
+) -> dict[str, TeamCalendar]:
+    """Calendario rimanente per squadra: gli avversari delle giornate future.
+
+    La giornata corrente è l'ultima giocata + 1 (1 se nessuna giocata);
+    ogni squadra ha un avversario per giornata rimanente, ordinato per
+    matchweek (stesso indice = stessa giornata per tutte le squadre).
+
+    Args:
+        cache_dir: directory della cache (default `CACHE_DIR`).
+
+    Returns:
+        team_id → `TeamCalendar` (vuoto se la cache non esiste ancora).
+    """
+    path = (cache_dir or CACHE_DIR) / CACHE_FILE.name
+    if not path.is_file():
+        logger.warning("Cache calendario assente: %s (esegui 'Aggiorna dati')", path)
+        return {}
+    frame = read_cache_frame(path)
+    if frame.empty:
+        return {}
+    current_matchweek = _current_matchweek(frame)
+    future = frame[frame["matchweek"].astype(int) > current_matchweek]
+    calendars: dict[str, TeamCalendar] = {}
+    team_ids = sorted(
+        set(future["home_id"].astype(str)) | set(future["away_id"].astype(str))
+    )
+    for team_id in team_ids:
+        matches = future[
+            (future["home_id"].astype(str) == team_id)
+            | (future["away_id"].astype(str) == team_id)
+        ].sort_values(["matchweek", "date"])
+        opponents = tuple(
+            str(row["away_id"]) if str(row["home_id"]) == team_id else str(row["home_id"])
+            for _, row in matches.iterrows()
+        )
+        calendars[team_id] = TeamCalendar(team_id=team_id, opponents=opponents)
+    return calendars
+
+
+def _current_matchweek(frame: pd.DataFrame) -> int:
+    """Giornata corrente: ultima giocata + 1 (1 se nessuna giocata)."""
+    played = frame[frame["status"] != 0]
+    return int(played["matchweek"].max()) + 1 if not played.empty else 1
 
 
 def _team_contexts(

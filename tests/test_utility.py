@@ -9,7 +9,13 @@ import pytest
 
 from entities import Player, Quote, Role, RoleGroup
 from projection import LeagueContext, TeamContext
-from utility import MODULES, opponent_outlook, utility_score
+from utility import (
+    MODULES,
+    TeamCalendar,
+    opponent_outlook,
+    team_strengths_from_players,
+    utility_score,
+)
 
 FULL_SLOTS = {
     RoleGroup.P: 2,
@@ -179,3 +185,82 @@ def test_defender_benchmark_is_attack_strength():
     outlook = opponent_outlook(player, league)
     assert outlook[0].easy is True
     assert outlook[0].strength == 0.5
+
+
+def test_full_calendar_counts_opponents_beyond_five_weeks():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("A", "Atalanta", None, None, ("3",)),
+        ]
+    )
+    calendar = {
+        "A": TeamCalendar("A", ("3", "3", "3", "3", "3", "3", "3", "1")),
+    }
+    player = _player("PC1", Role.PC, "A", "/p/pc1")
+    utility = utility_score(player, league, FULL_SLOTS, [], "4-3-3", calendar)
+    assert utility.calendar_ease == pytest.approx(1 / 8)
+
+
+def test_unknown_strength_is_neutral():
+    league = _league([])
+    calendar = {"A": TeamCalendar("A", ("1", "1", "1"))}
+    player = _player("PC1", Role.PC, "A", "/p/pc1")
+    utility = utility_score(player, league, FULL_SLOTS, [], "4-3-3", calendar)
+    outlook = opponent_outlook(player, league, calendar)
+    assert all(opp.easy is None for opp in outlook)
+    assert utility.calendar_ease == 0.5
+
+
+def test_proxy_strengths_fallback_preseason():
+    league = _league([], gf=None, ga=None)
+    calendar = {"A": TeamCalendar("A", ("1", "3"))}
+    strengths = {"1": 50.0, "3": 200.0, "A": 120.0}
+    player = _player("PC1", Role.PC, "A", "/p/pc1")
+    outlook = opponent_outlook(player, league, calendar, strengths)
+    assert [(opp.team_name, opp.easy) for opp in outlook] == [
+        ("1", True),
+        ("3", False),
+    ]
+    assert outlook[0].strength == 50.0
+
+
+def test_team_strengths_from_players():
+    players = [
+        _player("P1", Role.PC, "A", "/p/p1"),
+        _player("P2", Role.PC, "A", "/p/p2"),
+        _player("P3", Role.PC, "B", "/p/p3"),
+        Player(
+            name="NoFVM",
+            role=Role.POR,
+            team_id="C",
+            team_code="TC",
+            team_name="Team",
+            quote=Quote(qi=5, qa=5, fvm=None),
+            url="/p/nofvm",
+        ),
+    ]
+    strengths = team_strengths_from_players(players)
+    assert strengths["A"] == 100.0
+    assert strengths["B"] == 100.0
+    assert "C" not in strengths
+
+
+def test_coverage_penalized_on_full_calendar():
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+            _team("A", "Atalanta", None, None, ("3",)),
+            _team("B", "Bologna", None, None, ("3",)),
+        ]
+    )
+    calendar = {
+        "A": TeamCalendar("A", ("3", "3", "3", "3", "3", "3", "3", "1")),
+        "B": TeamCalendar("B", ("1", "1", "1", "1", "1", "1", "1", "1")),
+    }
+    player = _player("PC1", Role.PC, "A", "/p/pc1")
+    own = [_player("PC2", Role.PC, "B", "/p/pc2")]
+    utility = utility_score(player, league, FULL_SLOTS, own, "4-3-3", calendar)
+    assert utility.coverage == pytest.approx(0.0)

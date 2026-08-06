@@ -17,7 +17,7 @@ from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import cache_mtime, get_quotazioni
 from fetch_stats import get_statistiche
-from optimize import SpendingLimit, optimize_squad, spending_limit
+from optimize import ROSA_SLOTS, SpendingLimit, optimize_squad, spending_limit
 from projection import project
 from state import (
     add_taken,
@@ -39,6 +39,7 @@ from ui_common import (
     state_snapshot,
 )
 from utility import (
+    DEFAULT_MODULE,
     MODULES,
     CoverageRecommendation,
     UtilityScore,
@@ -46,6 +47,7 @@ from utility import (
     coverage_recommendations,
     coverage_suggestions,
     easy_candidates,
+    formation_lines,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
@@ -239,18 +241,66 @@ def _render_stato_asta() -> None:
             set_state(remove_taken(state, undo_by_label[undo_label]))
             st.rerun()
 
-        st.write("#### Prese")
-        frame = pd.DataFrame(
-            [
-                {
-                    "squadra": pick.owner,
-                    "giocatore": name_by_url.get(pick.player_url, pick.player_url),
-                    "prezzo": pick.price if pick.price is not None else "—",
-                }
-                for pick in reversed(state.taken)
-            ]
-        )
-        st.dataframe(frame, hide_index=True, width="stretch")
+
+def _render_prese() -> None:
+    """Tabella di tutte le prese dell'asta (ultima in cima)."""
+    state = get_state()
+    players = get_players(refresh_flag())
+    name_by_url = {player.url: player.name for player in players}
+    if not state.taken:
+        return
+    st.write("#### Prese")
+    frame = pd.DataFrame(
+        [
+            {
+                "squadra": pick.owner,
+                "giocatore": name_by_url.get(pick.player_url, pick.player_url),
+                "prezzo": pick.price if pick.price is not None else "—",
+            }
+            for pick in reversed(state.taken)
+        ]
+    )
+    st.dataframe(frame, hide_index=True, width="stretch")
+
+
+def _render_formazione() -> None:
+    """Modulo (condiviso con i consigli) e formazione disegnata con i presi."""
+    st.write("#### Formazione")
+    module = st.selectbox("Modulo", list(MODULES), key="modulo")
+    state = get_state()
+    players = get_players(refresh_flag())
+    if not players:
+        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+        return
+    own_urls = frozenset(pick.player_url for pick in state.taken if pick.owner == state.own_team)
+    own_players = [p for p in players if p.url in own_urls]
+    slots = slots_remaining(state, players)
+
+    for line in formation_lines(module, own_players):
+        st.caption(GROUP_LABELS[line.group])
+        cols = st.columns(line.lineup_count)
+        for index, col in enumerate(cols):
+            with col.container(border=True):
+                if index < len(line.players):
+                    player = line.players[index]
+                    st.markdown(f"**{player.name}**")
+                    st.caption(player.team_name)
+                else:
+                    st.markdown("—")
+    owned = " · ".join(
+        f"{GROUP_SHORT[group]} {ROSA_SLOTS[group] - slots.get(group, 0)}/{ROSA_SLOTS[group]}"
+        for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A)
+    )
+    st.caption(f"Rosa presa: {owned} — il modulo si può cambiare in ogni momento.")
+
+
+def _render_sidebar() -> None:
+    """Azioni di sistema: aggiorna dati, stato asta, report."""
+    with st.sidebar:
+        st.subheader("Dati")
+        _render_aggiorna_dati()
+        _render_export_import()
+        _render_report()
 
 
 def _render_export_import() -> None:
@@ -307,9 +357,9 @@ def _render_consigli() -> None:
     if not by_label:
         st.info("Tutti i giocatori del listone sono già presi.")
         return
-    col_module, col_player = st.columns([1, 3])
-    module = col_module.selectbox("Modulo", list(MODULES), key="consigli_module")
-    label = col_player.selectbox("Giocatore tra i rimasti", list(by_label), key="consigli_player")
+    module = st.session_state.get("modulo", DEFAULT_MODULE)
+    st.caption(f"Modulo: {module} — cambialo in tab Asta.")
+    label = st.selectbox("Giocatore tra i rimasti", list(by_label), key="consigli_player")
     if not st.button("Calcola consiglio", key="consigli_run", type="primary"):
         return
     with st.spinner("Calcolo in corso (pochi secondi)..."):
@@ -577,14 +627,21 @@ def main() -> None:
 
     if "aggiorna_dati" not in st.session_state:
         st.session_state.aggiorna_dati = False
+    if "modulo" not in st.session_state:
+        st.session_state.modulo = DEFAULT_MODULE
 
-    _render_export_import()
-    _render_report()
-    _render_aggiorna_dati()
-    _render_stato_asta()
-    _render_consigli()
-    _render_copertura()
-    _render_quotazioni()
+    _render_sidebar()
+
+    tab_asta, tab_suggerimenti, tab_listone = st.tabs(["Asta", "Suggerimenti", "Listone"])
+    with tab_asta:
+        _render_stato_asta()
+        _render_formazione()
+        _render_prese()
+    with tab_suggerimenti:
+        _render_consigli()
+        _render_copertura()
+    with tab_listone:
+        _render_quotazioni()
 
 
 if __name__ == "__main__":

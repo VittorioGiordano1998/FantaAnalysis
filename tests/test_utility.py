@@ -16,6 +16,7 @@ from utility import (
     coverage_recommendations,
     coverage_suggestions,
     easy_candidates,
+    formation_lines,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
@@ -428,3 +429,47 @@ def test_coverage_recommendations_empty_roster_targets_all_weeks():
     assert [rec.player.url for rec in recommendations] == [pc_c.url, pc_a.url]
     assert recommendations[0].covered_weeks == (4, 5)
     assert recommendations[1].covered_weeks == (4,)
+
+
+def _own_roster() -> list[Player]:
+    """Rosa sintetica: 2 P, 5 D, 4 C, 4 A (ordine di presa)."""
+    return [
+        _player("P1", Role.POR, "A", "/p/p1"),
+        _player("P2", Role.POR, "A", "/p/p2"),
+        _player("D1", Role.DC, "A", "/p/d1"),
+        _player("D2", Role.DD, "A", "/p/d2"),
+        _player("D3", Role.DS, "A", "/p/d3"),
+        _player("D4", Role.B, "A", "/p/d4"),
+        _player("D5", Role.DC, "A", "/p/d5"),
+        _player("C1", Role.C, "A", "/p/c1"),
+        _player("C2", Role.M, "A", "/p/c2"),
+        _player("C3", Role.E, "A", "/p/c3"),
+        _player("C4", Role.T, "A", "/p/c4"),
+        _player("A1", Role.PC, "A", "/p/a1"),
+        _player("A2", Role.A, "A", "/p/a2"),
+        _player("A3", Role.W, "A", "/p/a3"),
+        _player("A4", Role.PC, "A", "/p/a4"),
+    ]
+
+
+def test_formation_lines_fills_module_counts_in_pick_order():
+    own = _own_roster()
+    lines = formation_lines("4-3-3", own)
+    assert [line.lineup_count for line in lines] == [1, 4, 3, 3]
+    assert [len(line.players) for line in lines] == [1, 4, 3, 3]
+    assert [line.players[0].url for line in lines] == ["/p/p1", "/p/d1", "/p/c1", "/p/a1"]
+    assert lines[1].players[3].url == "/p/d4"
+    assert all(player.url != "/p/d5" for player in lines[1].players)
+
+
+def test_formation_lines_respects_module():
+    own = _own_roster()
+    lines = formation_lines("3-5-2", own)
+    assert [line.lineup_count for line in lines] == [1, 3, 5, 2]
+    assert [len(line.players) for line in lines] == [1, 3, 5, 2]
+
+
+def test_formation_lines_empty_roster():
+    lines = formation_lines("3-5-2", [])
+    assert [line.lineup_count for line in lines] == [1, 3, 5, 2]
+    assert all(line.players == () for line in lines)

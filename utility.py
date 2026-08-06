@@ -92,6 +92,44 @@ class CoverageRecommendation:
 
 
 @dataclass(frozen=True)
+class FormationLine:
+    """Una riga della formazione (XI): gruppo, posti di modulo, titolari."""
+
+    group: RoleGroup
+    lineup_count: int
+    players: tuple[Player, ...]
+
+
+def formation_lines(
+    module: str,
+    own_players: Sequence[Player],
+) -> tuple[FormationLine, ...]:
+    """Le righe della formazione per il modulo, riempite con i propri presi.
+
+    Per ogni gruppo ruolo (P, D, C, A) prende i primi `lineup_count`
+    giocatori propri in ordine di presa; se ne mancano, la riga ne ha meno
+    (i placeholder li disegna la UI).
+
+    Args:
+        module: preset modulo (chiave di `MODULES`).
+        own_players: giocatori presi dalla propria squadra, in ordine di
+            presa.
+
+    Returns:
+        Una `FormationLine` per gruppo, nell'ordine P, D, C, A.
+    """
+    counts = MODULES.get(module, MODULES[DEFAULT_MODULE])
+    lines: list[FormationLine] = []
+    for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A):
+        count = counts[_GROUP_INDEX[group]]
+        players = tuple(player for player in own_players if ROLE_GROUP[player.role] is group)[
+            :count
+        ]
+        lines.append(FormationLine(group=group, lineup_count=count, players=players))
+    return tuple(lines)
+
+
+@dataclass(frozen=True)
 class UtilityScore:
     """Punteggio di utilità con le tre componenti (0..1 ciascuna)."""
 

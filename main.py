@@ -40,7 +40,11 @@ from ui_common import (
 )
 from utility import (
     MODULES,
+    CoverageRecommendation,
     UtilityScore,
+    WeekSuggestion,
+    coverage_recommendations,
+    coverage_suggestions,
     easy_candidates,
     opponent_outlook,
     team_strengths_from_players,
@@ -377,6 +381,38 @@ def _easy_at_week(
     )
 
 
+@st.cache_data(show_spinner=False)
+def _coverage_advice(
+    taken: tuple[tuple[str, str, int | None], ...],
+    own_team: str,
+    force: bool,
+) -> tuple[tuple[CoverageRecommendation, ...], tuple[WeekSuggestion, ...]]:
+    """Consiglio diretto di copertura (chiave = snapshot prese).
+
+    Returns:
+        (classifica copertura, suggerimenti per giornata scoperta).
+    """
+    players = get_players(force)
+    league = get_league(force)
+    calendars = get_calendars(force)
+    strengths = team_strengths_from_players(players)
+    own_urls = frozenset(url for url, owner, _ in taken if owner == own_team)
+    own_players = [p for p in players if p.url in own_urls]
+    taken_set = frozenset(url for url, _, _ in taken)
+    remaining = [p for p in players if p.url not in taken_set]
+    return (
+        coverage_recommendations(own_players, remaining, league, calendars, strengths),
+        coverage_suggestions(own_players, remaining, league, calendars, strengths),
+    )
+
+
+def _fmt_weeks(weeks: tuple[int, ...]) -> str:
+    """Giornate compatte: "12, 15, 18" (max 6, poi "…")."""
+    if len(weeks) <= 6:
+        return ", ".join(str(week) for week in weeks)
+    return ", ".join(str(week) for week in weeks[:6]) + ", …"
+
+
 def _render_copertura() -> None:
     """Copertura delle giornate facili per la rosa + ricerca inversa."""
     st.subheader("Copertura giornate facili")
@@ -392,6 +428,7 @@ def _render_copertura() -> None:
     own_players = [p for p in players if p.url in own_urls]
 
     coverage = week_coverage(own_players, league, calendars, strengths)
+    uncovered = sum(1 for week in coverage if week.uncovered)
     if coverage:
         frame = pd.DataFrame(
             [
@@ -406,13 +443,53 @@ def _render_copertura() -> None:
         )
         st.caption("Partite facili coperte per giornata (scoperta = presenti senza facili)")
         st.dataframe(frame, hide_index=True, width="stretch")
-        uncovered = sum(1 for week in coverage if week.uncovered)
         if uncovered:
             st.caption(f"{uncovered} giornate scoperte: cerca qui sotto chi coprirle.")
     else:
         st.caption(
             "Nessun giocatore della tua squadra ancora: la copertura si attiva "
             "con le prime prese (la ricerca qui sotto funziona già)."
+        )
+
+    taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
+    recommendations, suggestions = _coverage_advice(taken_tuple, state.own_team, refresh_flag())
+    if recommendations:
+        st.write("#### Consiglio diretto")
+        if uncovered:
+            st.caption("Chi copre più giornate scoperte della tua rosa:")
+        else:
+            st.caption(
+                "Rosa senza giornate scoperte: chi ha più partite facili nelle giornate rimanenti."
+            )
+        for rec in recommendations:
+            st.success(
+                f"{rec.player.name} — {rec.player.team_name}: copre le giornate "
+                f"{_fmt_weeks(rec.covered_weeks)} "
+                f"({rec.points:.1f} punti attesi)"
+            )
+    if suggestions:
+        st.write("#### Chi copre le giornate scoperte")
+        suggestion_frame = pd.DataFrame(
+            [
+                {
+                    "giornata": sug.matchweek,
+                    "nome": sug.player.name,
+                    "squadra": sug.player.team_name,
+                    "punti": sug.points,
+                }
+                for sug in suggestions
+            ]
+        )
+        st.dataframe(
+            suggestion_frame,
+            column_config={
+                "giornata": st.column_config.NumberColumn("Giornata"),
+                "nome": st.column_config.TextColumn("Consiglio"),
+                "squadra": st.column_config.TextColumn("Squadra"),
+                "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
+            },
+            hide_index=True,
+            width="stretch",
         )
 
     if coverage:
@@ -433,7 +510,6 @@ def _render_copertura() -> None:
         (group.value for group, label in GROUP_LABELS.items() if label == role_label),
         "",
     )
-    taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
     rows = _easy_at_week(week_label, role_group, taken_tuple, refresh_flag())
     if not rows:
         st.info("Nessun giocatore rimasto con partita facile in questa giornata.")

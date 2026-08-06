@@ -17,7 +17,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from entities import ROLE_GROUP, Player, RoleGroup
-from projection import LeagueContext
+from projection import LeagueContext, project
 
 DEFAULT_MODULE = "4-3-3"
 
@@ -71,6 +71,24 @@ class WeekCoverage:
     def uncovered(self) -> bool:
         """Vero se la giornata è giocata da qualcuno ma senza partite facili."""
         return self.present_count > 0 and self.easy_count == 0
+
+
+@dataclass(frozen=True)
+class WeekSuggestion:
+    """Miglior candidato rimasto per coprire una giornata scoperta."""
+
+    matchweek: int
+    player: Player
+    points: float
+
+
+@dataclass(frozen=True)
+class CoverageRecommendation:
+    """Giocatore rimasto che copre più giornate target (consiglio diretto)."""
+
+    player: Player
+    covered_weeks: tuple[int, ...]
+    points: float
 
 
 @dataclass(frozen=True)
@@ -300,6 +318,115 @@ def week_coverage(
         )
         for week in range(weeks)
     )
+
+
+def coverage_suggestions(
+    own_players: Sequence[Player],
+    remaining_players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+) -> tuple[WeekSuggestion, ...]:
+    """Per ogni giornata scoperta, il miglior candidato rimasto che la copre.
+
+    Una giornata è scoperta quando la propria squadra ha giocatori presenti
+    ma nessuno con avversario facile. Per ogni giornata scoperta sceglie tra
+    i rimasti con partita facile quello con più punti attesi.
+
+    Args:
+        own_players: giocatori già presi dalla propria squadra.
+        remaining_players: giocatori ancora disponibili all'asta.
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+
+    Returns:
+        Una `WeekSuggestion` per giornata scoperta con candidati, in ordine
+        di matchweek (le giornate senza candidati vengono saltate).
+    """
+    coverage = week_coverage(own_players, league, calendar, team_strengths)
+    points = {player.url: project(player, league).total_points for player in remaining_players}
+    suggestions: list[WeekSuggestion] = []
+    for week in coverage:
+        if not week.uncovered:
+            continue
+        candidates = easy_candidates(
+            week.matchweek, remaining_players, league, calendar, team_strengths
+        )
+        best = max(candidates, key=lambda player: points.get(player.url, 0.0), default=None)
+        if best is not None:
+            suggestions.append(WeekSuggestion(week.matchweek, best, points[best.url]))
+    return tuple(suggestions)
+
+
+def coverage_recommendations(
+    own_players: Sequence[Player],
+    remaining_players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+    limit: int = 3,
+) -> tuple[CoverageRecommendation, ...]:
+    """I rimasti che coprono più giornate scoperte (consiglio diretto).
+
+    Le giornate target sono le scoperte della propria squadra; se non ce ne
+    sono (rosa vuota o sempre coperta) il target sono tutte le giornate
+    rimanenti, così il consiglio funziona anche pre-asta. Ranking: più
+    giornate target coperte, poi punti attesi.
+
+    Args:
+        own_players: giocatori già presi dalla propria squadra.
+        remaining_players: giocatori ancora disponibili all'asta.
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+        limit: numero massimo di consigli da restituire.
+
+    Returns:
+        Le `CoverageRecommendation` migliori (al massimo `limit`).
+    """
+    coverage = week_coverage(own_players, league, calendar, team_strengths)
+    critical = [week.matchweek for week in coverage if week.uncovered]
+    target = frozenset(critical) if critical else frozenset(_remaining_weeks(league, calendar))
+    points = {player.url: project(player, league).total_points for player in remaining_players}
+    ranked: list[tuple[int, float, Player, tuple[int, ...]]] = []
+    for player in remaining_players:
+        outlook = opponent_outlook(player, league, calendar, team_strengths)
+        covered = tuple(
+            opp.matchweek for opp in outlook if opp.easy is True and opp.matchweek in target
+        )
+        if covered:
+            ranked.append((len(covered), points.get(player.url, 0.0), player, covered))
+    ranked.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    return tuple(
+        CoverageRecommendation(
+            player=player,
+            covered_weeks=covered,
+            points=points.get(player.url, 0.0),
+        )
+        for _, _, player, covered in ranked[:limit]
+    )
+
+
+def _remaining_weeks(
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None,
+) -> tuple[int, ...]:
+    """Le giornate rimanenti del campionato, in ordine.
+
+    Derivate dal calendario rimanente (squadra con più giornate); senza
+    calendario dai prossimi avversari di `league` (fallback di test).
+    """
+    if calendar:
+        all_weeks = [team_calendar.weeks for team_calendar in calendar.values()]
+        if all_weeks:
+            longest = max(all_weeks, key=len)
+            return tuple(week.matchweek for week in longest)
+    if league.teams:
+        lengths = [len(team.upcoming_opponents) for team in league.teams.values()]
+        if lengths:
+            return tuple(league.current_matchweek + 1 + index for index in range(max(lengths)))
+    return ()
 
 
 def _coverage(

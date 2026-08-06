@@ -13,6 +13,8 @@ from utility import (
     MODULES,
     CalendarWeek,
     TeamCalendar,
+    coverage_recommendations,
+    coverage_suggestions,
     easy_candidates,
     opponent_outlook,
     team_strengths_from_players,
@@ -354,3 +356,75 @@ def test_easy_candidates_filters_by_matchweek():
     assert {p.url for p in at_four} == {pc_a.url, dc_c.url}
     at_five = easy_candidates(5, players, league, calendar)
     assert {p.url for p in at_five} == {pc_b.url}
+
+
+def _calendar_map() -> tuple[dict[str, TeamCalendar], LeagueContext]:
+    """Lega sintetica: "1" debole (ga 0.5), "3" forte (ga 1.5)."""
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("3", "Forte", 1.0, 1.5, ()),
+        ]
+    )
+    calendar = {
+        "A": _calendar("A", (4, "1"), (5, "3")),
+        "B": _calendar("B", (4, "3"), (5, "3")),
+        "C": _calendar("C", (4, "1"), (5, "1")),
+        "D": _calendar("D", (4, "3"), (5, "1")),
+    }
+    return calendar, league
+
+
+def test_coverage_suggestions_best_candidate_per_uncovered_week():
+    calendar, league = _calendar_map()
+    own = [_player("PC_B", Role.PC, "B", "/p/pc_b")]
+    weak_a = _player("PC_A", Role.PC, "A", "/p/pc_a")
+    strong_c = Player(
+        name="PC_C",
+        role=Role.PC,
+        team_id="C",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=200),
+        url="/p/pc_c",
+    )
+    remaining = [weak_a, strong_c]
+    suggestions = coverage_suggestions(own, remaining, league, calendar)
+    assert [(sug.matchweek, sug.player.url) for sug in suggestions] == [
+        (4, strong_c.url),
+        (5, strong_c.url),
+    ]
+    assert suggestions[0].points > 0
+
+
+def test_coverage_suggestions_empty_without_uncovered_weeks():
+    calendar, league = _calendar_map()
+    own = [_player("PC_C", Role.PC, "C", "/p/pc_c")]
+    remaining = [_player("PC_A", Role.PC, "A", "/p/pc_a")]
+    assert coverage_suggestions(own, remaining, league, calendar) == ()
+
+
+def test_coverage_recommendations_rank_by_covered_weeks():
+    calendar, league = _calendar_map()
+    own = [_player("PC_B", Role.PC, "B", "/p/pc_b")]
+    pc_c = _player("PC_C", Role.PC, "C", "/p/pc_c")
+    pc_d = _player("PC_D", Role.PC, "D", "/p/pc_d")
+    pc_a = _player("PC_A", Role.PC, "A", "/p/pc_a")
+    recommendations = coverage_recommendations(own, [pc_c, pc_d, pc_a], league, calendar)
+    assert [rec.player.url for rec in recommendations] == [
+        pc_c.url,
+        pc_d.url,
+        pc_a.url,
+    ]
+    assert recommendations[0].covered_weeks == (4, 5)
+    assert recommendations[1].covered_weeks == (5,)
+
+
+def test_coverage_recommendations_empty_roster_targets_all_weeks():
+    calendar, league = _calendar_map()
+    pc_a = _player("PC_A", Role.PC, "A", "/p/pc_a")
+    pc_c = _player("PC_C", Role.PC, "C", "/p/pc_c")
+    recommendations = coverage_recommendations([], [pc_a, pc_c], league, calendar)
+    assert [rec.player.url for rec in recommendations] == [pc_c.url, pc_a.url]
+    assert recommendations[0].covered_weeks == (4, 5)
+    assert recommendations[1].covered_weeks == (4,)

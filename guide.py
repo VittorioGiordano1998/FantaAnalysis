@@ -13,10 +13,16 @@ from dataclasses import dataclass
 
 import pulp
 
-from entities import ROLE_GROUP, Player, RoleGroup
+from entities import ROLE_GROUP, Player, Role, RoleGroup
 from optimize import ROSA_SLOTS
 from projection import LeagueContext, project
-from utility import TeamCalendar, opponent_outlook, remaining_weeks
+from utility import (
+    TeamCalendar,
+    formation_positions,
+    opponent_outlook,
+    player_roles,
+    remaining_weeks,
+)
 
 WEEK_WEIGHT = 100_000.0
 POINTS_WEIGHT = 100.0
@@ -45,6 +51,162 @@ class GreedyPick:
     added_weeks: tuple[int, ...]
     covered_weeks: tuple[int, ...]
     cost: int
+
+
+@dataclass(frozen=True)
+class LineCombination:
+    """Una combinazione per una riga: un giocatore per posizione."""
+
+    players: tuple[Player, ...]
+    covered_weeks: tuple[int, ...]
+    points: float
+    cost: int
+
+
+def k_best_rosters(
+    module: str,
+    players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+    *,
+    budget: int = 500,
+    k: int = 10,
+    slots: Mapping[RoleGroup, int] = ROSA_SLOTS,
+) -> tuple[CoverageSquad, ...]:
+    """Le k migliori rose per il modulo, con esclusione progressiva dei top.
+
+    L'alternativa n esclude dal pool i titolari (XI del template del
+    modulo) delle alternative 1..n-1: se i top non sono disponibili in
+    asta, questa è la migliore rosa rimasta. La rosa resta la stessa per
+    tutte le alternative finché il pool lo consente.
+
+    Args:
+        module: preset modulo (per estrarre l'XI da escludere).
+        players: giocatori ancora disponibili (pool).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata (fallback pre-stagione).
+        budget: crediti disponibili.
+        k: numero di alternative (default 10).
+        slots: slot di rosa per gruppo (default 2P-8D-8C-7A).
+
+    Returns:
+        Una `CoverageSquad` per alternativa (meno se il pool si esaurisce).
+    """
+    excluded: set[str] = set()
+    squads: list[CoverageSquad] = []
+    previous: frozenset[str] = frozenset()
+    for _ in range(k):
+        pool = [player for player in players if player.url not in excluded]
+        squad = optimize_roster_coverage(
+            pool, league, calendar, team_strengths, budget=budget, slots=slots
+        )
+        if squad.status != _OPTIMAL:
+            break
+        selected_urls = frozenset(player.url for player in squad.selected)
+        if selected_urls == previous:
+            break
+        previous = selected_urls
+        squads.append(squad)
+        xi = formation_positions(module, squad.selected)
+        excluded |= {
+            slot.player.url for line in xi for slot in line.positions if slot.player is not None
+        }
+    return tuple(squads)
+
+
+def position_candidates(
+    role: Role,
+    players: Sequence[Player],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+) -> tuple[Player, ...]:
+    """Tutti i giocatori validi per il ruolo, senza soglia.
+
+    Includono i multiruolo (`role` in `player_roles`); ordinati per
+    giornate facili coperte, poi punti attesi, poi prezzo minore.
+
+    Args:
+        role: ruolo richiesto dalla posizione.
+        players: giocatori candidati (es. il gruppo del modulo).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata.
+
+    Returns:
+        Tutti i giocatori validi, ordinati per copertura.
+    """
+    valid = [player for player in players if role in player_roles(player)]
+    return top_candidates(valid, league, calendar, team_strengths, limit=len(valid))
+
+
+def beam_combinations(
+    positions: Sequence[Sequence[Player]],
+    league: LeagueContext,
+    calendar: Mapping[str, TeamCalendar] | None = None,
+    team_strengths: Mapping[str, float] | None = None,
+    *,
+    beam: int = 50,
+    top: int = 50,
+) -> tuple[LineCombination, ...]:
+    """Le migliori combinazioni per una riga (beam search).
+
+    Una combinazione ha un giocatore per posizione (senza duplicati);
+    l'obiettivo è massimizzare le giornate facili coperte, poi i punti
+    attesi, poi il costo minore.
+
+    Args:
+        positions: liste di candidati per posizione (già ordinate).
+        league: contesto campionato.
+        calendar: calendario rimanente per squadra.
+        team_strengths: forza squadra stimata.
+        beam: larghezza del fascio (default 50).
+        top: numero di combinazioni da restituire (default 50).
+
+    Returns:
+        Le migliori `LineCombination`, ordinate per copertura.
+    """
+    states: list[tuple[tuple[Player, ...], frozenset[int], float, int]] = [
+        ((), frozenset(), 0.0, 0)
+    ]
+    for candidates in positions:
+        easy_by_url = {
+            player.url: frozenset(
+                opp.matchweek
+                for opp in opponent_outlook(player, league, calendar, team_strengths)
+                if opp.easy is True
+            )
+            for player in candidates
+        }
+        points_by_url = {player.url: project(player, league).total_points for player in candidates}
+        next_states: list[tuple[tuple[Player, ...], frozenset[int], float, int]] = []
+        for players, covered, points, cost in states:
+            taken_urls = {player.url for player in players}
+            for player in candidates:
+                if player.url in taken_urls:
+                    continue
+                easy = easy_by_url[player.url]
+                next_states.append(
+                    (
+                        players + (player,),
+                        covered | easy,
+                        points + points_by_url[player.url],
+                        cost + (player.quote.qi or 0),
+                    )
+                )
+        next_states.sort(key=lambda state: (-len(state[1]), -state[2], state[3]))
+        states = next_states[:beam]
+    return tuple(
+        LineCombination(
+            players=players,
+            covered_weeks=tuple(sorted(covered)),
+            points=points,
+            cost=cost,
+        )
+        for players, covered, points, cost in states[:top]
+    )
 
 
 def optimize_roster_coverage(

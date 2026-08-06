@@ -5,9 +5,16 @@ modello MILP usa slot ridotti per rendere i test veloci e determinati.
 """
 
 from entities import Player, Quote, Role, RoleGroup
-from guide import greedy_cover, optimize_roster_coverage, top_candidates
+from guide import (
+    beam_combinations,
+    greedy_cover,
+    k_best_rosters,
+    optimize_roster_coverage,
+    position_candidates,
+    top_candidates,
+)
 from projection import LeagueContext, TeamContext
-from utility import CalendarWeek, TeamCalendar
+from utility import CalendarWeek, TeamCalendar, formation_positions
 
 FULL_SLOTS = {
     RoleGroup.P: 2,
@@ -150,3 +157,89 @@ def test_top_candidates_limited():
     players, league, calendar = _coverage_scenario()
     candidates = top_candidates([p for p in players if p.role is Role.C], league, calendar, limit=1)
     assert [player.url for player in candidates] == ["/p/ca"]
+
+
+def test_k_best_rosters_excludes_previous_xis():
+    players, league, calendar = _coverage_scenario()
+    squads = k_best_rosters("4-3-3", players, league, calendar, budget=200, k=3, slots=SLOTS_ONE)
+    assert len(squads) >= 2
+    first_xi = {
+        slot.player.url
+        for line in formation_positions("4-3-3", squads[0].selected)
+        for slot in line.positions
+        if slot.player is not None
+    }
+    second_selected = {player.url for player in squads[1].selected}
+    assert not first_xi & second_selected
+
+
+def test_k_best_rosters_stops_when_pool_exhausted():
+    players, league, calendar = _coverage_scenario()
+    squads = k_best_rosters("4-3-3", players, league, calendar, budget=200, k=10, slots=SLOTS_ONE)
+    assert len(squads) < 10
+    assert all(squad.status == "Optimal" for squad in squads)
+
+
+def test_position_candidates_returns_all_sorted():
+    players, league, calendar = _coverage_scenario()
+    candidates = position_candidates(
+        Role.C, [p for p in players if p.role is Role.C], league, calendar
+    )
+    assert len(candidates) == 2
+    assert [player.url for player in candidates] == ["/p/ca", "/p/cb"]
+
+
+def test_position_candidates_accepts_multi_role():
+    players, league, calendar = _coverage_scenario()
+    w_a = Player(
+        name="W_A",
+        role=Role.W,
+        team_id="A",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=100),
+        url="/p/wa",
+        roles=(Role.W, Role.A),
+    )
+    candidates = position_candidates(Role.A, [w_a], league, calendar)
+    assert [player.url for player in candidates] == ["/p/wa"]
+
+
+def test_beam_combinations_ranks_by_coverage():
+    players, league, calendar = _coverage_scenario()
+    c_candidates = [p for p in players if p.role is Role.C]
+    a_candidates = [p for p in players if p.role is Role.PC]
+    combos = beam_combinations([c_candidates, a_candidates], league, calendar, top=2)
+    assert len(combos) == 2
+    best = combos[0]
+    assert {player.url for player in best.players} == {"/p/ca", "/p/pcb"}
+    assert best.covered_weeks == (4, 5)
+    assert best.cost == 20
+
+
+def test_beam_combinations_skips_duplicate_players():
+    w_a = Player(
+        name="W_A",
+        role=Role.W,
+        team_id="A",
+        team_code="TC",
+        team_name="Team",
+        quote=Quote(qi=10, qa=10, fvm=100),
+        url="/p/wa",
+        roles=(Role.W, Role.A),
+    )
+    league = _league(
+        [
+            _team("1", "Debole", 1.0, 0.5, ()),
+            _team("2", "Debole2", 1.0, 0.5, ()),
+        ]
+    )
+    calendar = {
+        "A": _calendar("A", (4, "1")),
+        "B": _calendar("B", (4, "2")),
+    }
+    other = _player("PC_B", Role.PC, "B", "/p/pcb")
+    combos = beam_combinations([[w_a, other], [w_a, other]], league, calendar, top=10)
+    for combo in combos:
+        urls = [player.url for player in combo.players]
+        assert len(urls) == len(set(urls))

@@ -1,6 +1,7 @@
 """Genera le guide asta (moduli e ruoli) in xlsx, csv e md dentro `output/`.
 
 Uso: python tools/generate_guide.py [--budget N] [--output DIR]
+      [--alternative K] [--beam B] [--top T]
 
 Legge la cache `data/` e lo stato asta (`data/asta.json`): il pool è
 costituito dai giocatori rimasti, il budget è quello residuo (o `--budget`).
@@ -19,11 +20,16 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 
-from entities import GROUP_LABELS, ROLE_GROUP, Role, RoleGroup, attach_stats
+from entities import GROUP_LABELS, ROLE_GROUP, Player, Role, RoleGroup, attach_stats
 from fetch_fixtures import read_league_context, read_remaining_calendar
 from fetch_quotazioni import read_players
 from fetch_stats import read_season_stats
-from guide import greedy_cover, optimize_roster_coverage, top_candidates
+from guide import (
+    beam_combinations,
+    greedy_cover,
+    k_best_rosters,
+    position_candidates,
+)
 from projection import LeagueContext, project
 from state import load_state, spent_budget, taken_urls
 from utility import (
@@ -87,68 +93,74 @@ def _module_guide(
     remaining: Sequence,
     ctx: GuideContext,
     budget: int,
+    alternatives: int,
 ) -> dict:
-    """Rosa per copertura + XI dal template del modulo."""
-    squad = optimize_roster_coverage(
-        remaining, ctx.league, ctx.calendars, ctx.strengths, budget=budget
-    )
+    """Le `alternatives` rose migliori per il modulo (esclusione progressiva)."""
     weeks = remaining_weeks(ctx.league, ctx.calendars)
-    if squad.status != "Optimal":
-        return {
-            "module": module,
-            "status": squad.status,
-            "xi": (),
-            "bench": (),
-            "cost": 0,
-            "points": 0.0,
-            "covered": (),
-            "uncovered": weeks,
-            "weeks": weeks,
-        }
-    xi_lines = formation_positions(module, squad.selected)
-    xi = [slot.player for line in xi_lines for slot in line.positions if slot.player]
-    bench = [player for player in squad.selected if player not in xi]
-    return {
-        "module": module,
-        "status": squad.status,
-        "xi": xi,
-        "bench": bench,
-        "cost": squad.total_cost,
-        "points": squad.total_points,
-        "covered": squad.covered_weeks,
-        "uncovered": tuple(week for week in weeks if week not in squad.covered_weeks),
-        "weeks": weeks,
-    }
+    alternatives_list: list[dict] = []
+    for squad in k_best_rosters(
+        module,
+        remaining,
+        ctx.league,
+        ctx.calendars,
+        ctx.strengths,
+        budget=budget,
+        k=alternatives,
+    ):
+        xi_lines = formation_positions(module, squad.selected)
+        xi = [slot.player for line in xi_lines for slot in line.positions if slot.player]
+        bench = [player for player in squad.selected if player not in xi]
+        alternatives_list.append(
+            {
+                "status": squad.status,
+                "xi": xi,
+                "bench": bench,
+                "cost": squad.total_cost,
+                "points": squad.total_points,
+                "covered": squad.covered_weeks,
+                "uncovered": tuple(week for week in weeks if week not in squad.covered_weeks),
+            }
+        )
+    return {"module": module, "weeks": weeks, "alternatives": alternatives_list}
 
 
 def _role_guide(
     module: str,
     remaining: Sequence,
     ctx: GuideContext,
+    beam: int,
+    top: int,
 ) -> list[dict]:
-    """Per gruppo del modulo: candidati per posizione + greedy."""
+    """Per gruppo del modulo: candidati completi, greedy, combinazioni."""
     template = MODULE_POSITIONS[module]
     groups: list[dict] = []
     for group, role_names in zip(
         (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A), template, strict=True
     ):
         group_players = [player for player in remaining if ROLE_GROUP[player.role] is group]
-        positions = [
-            {
-                "role": Role(role_name),
-                "candidates": top_candidates(
-                    [p for p in group_players if Role(role_name) in player_roles(p)],
-                    ctx.league,
-                    ctx.calendars,
-                    ctx.strengths,
-                ),
-            }
-            for role_name in role_names
-        ]
+        positions: list[dict] = []
+        candidate_lists: list[tuple[Player, ...]] = []
+        for role_name in role_names:
+            role = Role(role_name)
+            candidates = position_candidates(
+                role, group_players, ctx.league, ctx.calendars, ctx.strengths
+            )
+            positions.append({"role": role, "candidates": candidates})
+            candidate_lists.append(candidates)
         greedy = greedy_cover(
             group_players, ctx.league, ctx.calendars, ctx.strengths, limit=len(role_names)
         )
-        groups.append({"group": group, "positions": positions, "greedy": greedy})
+        combinations = beam_combinations(
+            candidate_lists, ctx.league, ctx.calendars, ctx.strengths, beam=beam, top=top
+        )
+        groups.append(
+            {
+                "group": group,
+                "positions": positions,
+                "greedy": greedy,
+                "combinations": combinations,
+            }
+        )
     return groups
 
 
@@ -167,47 +179,53 @@ def _write_xlsx_moduli(guides: list[dict], ctx: GuideContext, path: Path) -> Non
     wb = Workbook()
     ws = wb.active
     ws.title = "Confronto"
-    ws.append(["Modulo", "Stato", "Costo", "Giornate coperte", "Su", "Punti", "Scoperte"])
+    ws.append(["Modulo", "Alternativa", "Stato", "Costo", "Coperto", "Su", "Punti", "Scoperte"])
     for guide in guides:
-        ws.append(
-            [
-                guide["module"],
-                guide["status"],
-                guide["cost"],
-                len(guide["covered"]),
-                len(guide["weeks"]),
-                round(guide["points"], 1),
-                _fmt_weeks(guide["uncovered"]),
-            ]
-        )
+        for index, alt in enumerate(guide["alternatives"], start=1):
+            ws.append(
+                [
+                    guide["module"],
+                    index,
+                    alt["status"],
+                    alt["cost"],
+                    len(alt["covered"]),
+                    len(guide["weeks"]),
+                    round(alt["points"], 1),
+                    _fmt_weeks(alt["uncovered"]),
+                ]
+            )
     for guide in guides:
         ws = wb.create_sheet(guide["module"])
-        ws.append(
-            [
-                f"Modulo {guide['module']} — costo {guide['cost']} — coperto "
-                f"{len(guide['covered'])}/{len(guide['weeks'])} — punti "
-                f"{guide['points']:.1f}"
-            ]
-        )
-        ws.append(["Linea", "Ruolo", "Nome", "Squadra", "QI", "Punti", "Giornate facili"])
-        for line in formation_positions(guide["module"], guide["xi"]):
-            for slot in line.positions:
-                if slot.player is None:
-                    continue
+        for index, alt in enumerate(guide["alternatives"], start=1):
+            ws.append(
+                [
+                    f"Alternativa {index} — costo {alt['cost']} — coperto "
+                    f"{len(alt['covered'])}/{len(guide['weeks'])} — punti "
+                    f"{alt['points']:.1f}"
+                ]
+            )
+            ws.append(["Linea", "Ruolo", "Nome", "Squadra", "QI", "Punti", "Giornate facili"])
+            for line in formation_positions(guide["module"], alt["xi"]):
+                for slot in line.positions:
+                    if slot.player is None:
+                        continue
+                    ws.append(
+                        [
+                            GROUP_LABELS[line.group],
+                            slot.role.value.upper(),
+                            *_player_row(slot.player, ctx),
+                        ]
+                    )
+            if alt["bench"]:
+                ws.append([])
                 ws.append(
-                    [
-                        GROUP_LABELS[line.group],
-                        slot.role.value.upper(),
-                        *_player_row(slot.player, ctx),
-                    ]
+                    ["Panchina", "Ruolo", "Nome", "Squadra", "QI", "Punti", "Giornate facili"]
                 )
-        if guide["bench"]:
+                for player in alt["bench"]:
+                    ws.append(["Panchina", _role_code(player), *_player_row(player, ctx)])
             ws.append([])
-            ws.append(["Panchina", "Ruolo", "Nome", "Squadra", "QI", "Punti", "Giornate facili"])
-            for player in guide["bench"]:
-                ws.append(["Panchina", _role_code(player), *_player_row(player, ctx)])
-        ws.append([])
-        ws.append(["Giornate scoperte:", _fmt_weeks(guide["uncovered"])])
+            ws.append(["Giornate scoperte:", _fmt_weeks(alt["uncovered"])])
+            ws.append([])
     _autofit_workbook(wb)
     wb.save(path)
 
@@ -218,6 +236,7 @@ def _write_csv_moduli(guides: list[dict], ctx: GuideContext, path: Path) -> None
         writer.writerow(
             [
                 "modulo",
+                "alternativa",
                 "tipo",
                 "linea",
                 "ruolo",
@@ -229,67 +248,77 @@ def _write_csv_moduli(guides: list[dict], ctx: GuideContext, path: Path) -> None
             ]
         )
         for guide in guides:
-            for line in formation_positions(guide["module"], guide["xi"]):
-                for slot in line.positions:
-                    if slot.player is None:
-                        continue
+            for index, alt in enumerate(guide["alternatives"], start=1):
+                for line in formation_positions(guide["module"], alt["xi"]):
+                    for slot in line.positions:
+                        if slot.player is None:
+                            continue
+                        writer.writerow(
+                            [
+                                guide["module"],
+                                index,
+                                "titolare",
+                                GROUP_LABELS[line.group],
+                                slot.role.value.upper(),
+                                *_player_row(slot.player, ctx),
+                            ]
+                        )
+                for player in alt["bench"]:
                     writer.writerow(
                         [
                             guide["module"],
-                            "titolare",
-                            GROUP_LABELS[line.group],
-                            slot.role.value.upper(),
-                            *_player_row(slot.player, ctx),
+                            index,
+                            "panchina",
+                            "",
+                            _role_code(player),
+                            *_player_row(player, ctx),
                         ]
                     )
-            for player in guide["bench"]:
-                writer.writerow(
-                    [guide["module"], "panchina", "", _role_code(player), *_player_row(player, ctx)]
-                )
 
 
 def _write_md_moduli(guides: list[dict], ctx: GuideContext, path: Path) -> None:
-    lines = ["# Guide moduli — rosa completa per copertura giornate facili", ""]
-    lines.append("| Modulo | Stato | Costo | Coperto | Punti | Giornate scoperte |")
+    lines = ["# Guide moduli — rose alternative per copertura giornate facili", ""]
+    lines.append("| Modulo | Alternativa | Costo | Coperto | Punti | Scoperte |")
     lines.append("|---|---|---|---|---|---|")
     for guide in guides:
-        lines.append(
-            f"| {guide['module']} | {guide['status']} | {guide['cost']} | "
-            f"{len(guide['covered'])}/{len(guide['weeks'])} | {guide['points']:.1f} | "
-            f"{_fmt_weeks(guide['uncovered'])} |"
-        )
+        for index, alt in enumerate(guide["alternatives"], start=1):
+            lines.append(
+                f"| {guide['module']} | {index} | {alt['cost']} | "
+                f"{len(alt['covered'])}/{len(guide['weeks'])} | {alt['points']:.1f} | "
+                f"{_fmt_weeks(alt['uncovered'])} |"
+            )
     for guide in guides:
         lines.append("")
         lines.append(f"## Modulo {guide['module']}")
-        lines.append(
-            f"Costo {guide['cost']} — coperto {len(guide['covered'])}/"
-            f"{len(guide['weeks'])} — punti {guide['points']:.1f}"
-        )
-        lines.append("")
-        lines.append("| Linea | Ruolo | Nome | Squadra | QI | Punti | Giornate facili |")
-        lines.append("|---|---|---|---|---|---|---|")
-        for line in formation_positions(guide["module"], guide["xi"]):
-            for slot in line.positions:
-                if slot.player is None:
-                    continue
-                lines.append(
-                    f"| {GROUP_LABELS[line.group]} | {slot.role.value.upper()} | "
-                    + " | ".join(str(value) for value in _player_row(slot.player, ctx))
-                    + " |"
-                )
-        if guide["bench"]:
+        for index, alt in enumerate(guide["alternatives"], start=1):
             lines.append("")
-            lines.append("### Panchina")
-            lines.append("| Ruolo | Nome | Squadra | QI | Punti | Giornate facili |")
-            lines.append("|---|---|---|---|---|---|")
-            for player in guide["bench"]:
-                lines.append(
-                    f"| {_role_code(player)} | "
-                    + " | ".join(str(value) for value in _player_row(player, ctx))
-                    + " |"
-                )
-        lines.append("")
-        lines.append(f"Giornate scoperte: {_fmt_weeks(guide['uncovered'])}")
+            lines.append(f"### Alternativa {index}")
+            lines.append(
+                f"Costo {alt['cost']} — coperto {len(alt['covered'])}/"
+                f"{len(guide['weeks'])} — punti {alt['points']:.1f}"
+            )
+            lines.append("")
+            lines.append("| Linea | Ruolo | Nome | Squadra | QI | Punti | Giornate facili |")
+            lines.append("|---|---|---|---|---|---|---|")
+            for line in formation_positions(guide["module"], alt["xi"]):
+                for slot in line.positions:
+                    if slot.player is None:
+                        continue
+                    lines.append(
+                        f"| {GROUP_LABELS[line.group]} | {slot.role.value.upper()} | "
+                        + " | ".join(str(value) for value in _player_row(slot.player, ctx))
+                        + " |"
+                    )
+            if alt["bench"]:
+                lines.append("")
+                lines.append("**Panchina:**")
+                for player in alt["bench"]:
+                    lines.append(
+                        f"- {_role_code(player)} — "
+                        + " · ".join(str(value) for value in _player_row(player, ctx))
+                    )
+            lines.append("")
+            lines.append(f"Giornate scoperte: {_fmt_weeks(alt['uncovered'])}")
     path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -303,18 +332,16 @@ def _write_xlsx_ruoli(
     wb = Workbook()
     ws = wb.active
     ws.title = "Confronto"
-    ws.append(["Modulo", "Gruppo", "Ruoli", "Scelti (greedy)", "Giornate coperte", "Costo"])
+    ws.append(["Modulo", "Gruppo", "Ruoli", "Candidati per posizione", "Combinazioni top"])
     for module, groups in zip(modules, role_guides, strict=True):
         for group in groups:
-            greedy = group["greedy"]
             ws.append(
                 [
                     module,
                     GROUP_LABELS[group["group"]],
                     "/".join(pos["role"].value.upper() for pos in group["positions"]),
-                    len(greedy),
-                    len(greedy[-1].covered_weeks) if greedy else 0,
-                    greedy[-1].cost if greedy else 0,
+                    min(len(pos["candidates"]) for pos in group["positions"]),
+                    len(group["combinations"]),
                 ]
             )
     for module, groups in zip(modules, role_guides, strict=True):
@@ -322,10 +349,11 @@ def _write_xlsx_ruoli(
         for group in groups:
             ws.append([])
             ws.append([GROUP_LABELS[group["group"]]])
-            ws.append(["Posizione", "Rango", "Nome", "Squadra", "QI", "Punti", "Giornate facili"])
             for pos in group["positions"]:
+                ws.append([f"Posizione {pos['role'].value.upper()} — tutti i candidati"])
+                ws.append(["Rango", "Nome", "Squadra", "QI", "Punti", "Giornate facili"])
                 for rank, player in enumerate(pos["candidates"], start=1):
-                    ws.append([pos["role"].value.upper(), rank, *_player_row(player, ctx)])
+                    ws.append([rank, *_player_row(player, ctx)])
             ws.append([])
             ws.append(["Scelti (greedy)", "Aggiunte", "Coperte cumulative", "Costo"])
             for pick in group["greedy"]:
@@ -335,6 +363,18 @@ def _write_xlsx_ruoli(
                         len(pick.added_weeks),
                         len(pick.covered_weeks),
                         pick.cost,
+                    ]
+                )
+            ws.append([])
+            ws.append(["Top combinazioni", "Giocatori", "Coperti", "Punti", "Costo"])
+            for index, combo in enumerate(group["combinations"], start=1):
+                ws.append(
+                    [
+                        index,
+                        ", ".join(player.name for player in combo.players),
+                        len(combo.covered_weeks),
+                        round(combo.points, 1),
+                        combo.cost,
                     ]
                 )
             ws.append([])
@@ -366,7 +406,7 @@ def _write_csv_ruoli(
                 "qi",
                 "punti",
                 "giornate_facili",
-                "coperte",
+                "coperti",
                 "costo",
             ]
         )
@@ -399,6 +439,23 @@ def _write_csv_ruoli(
                             pick.cost,
                         ]
                     )
+                for index, combo in enumerate(group["combinations"], start=1):
+                    writer.writerow(
+                        [
+                            module,
+                            GROUP_LABELS[group["group"]],
+                            "/".join(_role_code(player) for player in combo.players),
+                            "combinazione",
+                            index,
+                            ", ".join(player.name for player in combo.players),
+                            "",
+                            "",
+                            round(combo.points, 1),
+                            _fmt_weeks(combo.covered_weeks),
+                            len(combo.covered_weeks),
+                            combo.cost,
+                        ]
+                    )
 
 
 def _write_md_ruoli(
@@ -408,18 +465,20 @@ def _write_md_ruoli(
     ctx: GuideContext,
     path: Path,
 ) -> None:
-    lines = ["# Guide ruoli — combinazioni per ruolo (moduli Mantra)", ""]
+    lines = ["# Guide ruoli — candidati e combinazioni per ruolo (moduli Mantra)", ""]
     for module, groups in zip(modules, role_guides, strict=True):
         lines.append(f"## Modulo {module}")
         for group in groups:
             lines.append("")
             lines.append(f"### {GROUP_LABELS[group['group']]}")
-            lines.append("| Posizione | Rango | Nome | Squadra | QI | Punti | Giornate facili |")
-            lines.append("|---|---|---|---|---|---|---|")
             for pos in group["positions"]:
+                lines.append("")
+                lines.append(f"**Posizione {pos['role'].value.upper()} — tutti i candidati:**")
+                lines.append("| Rango | Nome | Squadra | QI | Punti | Giornate facili |")
+                lines.append("|---|---|---|---|---|---|")
                 for rank, player in enumerate(pos["candidates"], start=1):
                     lines.append(
-                        f"| {pos['role'].value.upper()} | {rank} | "
+                        f"| {rank} | "
                         + " | ".join(str(value) for value in _player_row(player, ctx))
                         + " |"
                     )
@@ -429,6 +488,15 @@ def _write_md_ruoli(
                 lines.append(
                     f"- {pick.player.name}: +{len(pick.added_weeks)} giornate, "
                     f"{len(pick.covered_weeks)} coperte cumulative, {pick.cost} crediti"
+                )
+            lines.append("")
+            lines.append("**Top combinazioni per riga:**")
+            lines.append("| # | Giocatori | Coperti | Punti | Costo |")
+            lines.append("|---|---|---|---|---|")
+            for index, combo in enumerate(group["combinations"], start=1):
+                lines.append(
+                    f"| {index} | {', '.join(player.name for player in combo.players)} | "
+                    f"{len(combo.covered_weeks)} | {combo.points:.1f} | {combo.cost} |"
                 )
             lines.append("")
             lines.append("Matrice copertura (X = partita facile):")
@@ -469,18 +537,41 @@ def main() -> None:
         default=Path("output"),
         help="Directory di destinazione (default: output)",
     )
+    parser.add_argument(
+        "--alternative",
+        type=int,
+        default=10,
+        help="Rose alternative per modulo (default: 10)",
+    )
+    parser.add_argument(
+        "--beam",
+        type=int,
+        default=50,
+        help="Larghezza del beam search per le combinazioni (default: 50)",
+    )
+    parser.add_argument(
+        "--top",
+        type=int,
+        default=50,
+        help="Combinazioni per riga da riportare (default: 50)",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     args.output.mkdir(parents=True, exist_ok=True)
 
     _, ctx, remaining, budget = _load_data(args.budget)
-    logger.info("Pool: %d giocatori rimasti — budget: %d crediti", len(remaining), budget)
+    logger.info(
+        "Pool: %d giocatori rimasti — budget: %d crediti — alternative: %d",
+        len(remaining),
+        budget,
+        args.alternative,
+    )
     weeks = remaining_weeks(ctx.league, ctx.calendars)
 
     modules = list(MODULES)
-    guides = [_module_guide(module, remaining, ctx, budget) for module in modules]
-    role_guides = [_role_guide(module, remaining, ctx) for module in modules]
+    guides = [_module_guide(module, remaining, ctx, budget, args.alternative) for module in modules]
+    role_guides = [_role_guide(module, remaining, ctx, args.beam, args.top) for module in modules]
 
     _write_xlsx_moduli(guides, ctx, args.output / "guide_moduli.xlsx")
     _write_csv_moduli(guides, ctx, args.output / "guide_moduli.csv")

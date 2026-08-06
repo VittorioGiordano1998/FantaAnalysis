@@ -454,7 +454,7 @@ def coverage_recommendations(
     """
     coverage = week_coverage(own_players, league, calendar, team_strengths)
     critical = [week.matchweek for week in coverage if week.uncovered]
-    target = frozenset(critical) if critical else frozenset(_remaining_weeks(league, calendar))
+    target = frozenset(critical) if critical else frozenset(remaining_weeks(league, calendar))
     points = {player.url: project(player, league).total_points for player in remaining_players}
     ranked: list[tuple[int, float, Player, tuple[int, ...]]] = []
     for player in remaining_players:
@@ -475,7 +475,7 @@ def coverage_recommendations(
     )
 
 
-def _remaining_weeks(
+def remaining_weeks(
     league: LeagueContext,
     calendar: Mapping[str, TeamCalendar] | None,
 ) -> tuple[int, ...]:

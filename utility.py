@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from entities import ROLE_GROUP, Player, RoleGroup
+from entities import ROLE_GROUP, Player, Role, RoleGroup
 from projection import LeagueContext, project
 
 DEFAULT_MODULE = "4-3-3"
@@ -26,6 +26,13 @@ MODULES: Mapping[str, tuple[int, int, int, int]] = {
     "3-5-2": (1, 3, 5, 2),
     "4-4-2": (1, 4, 4, 2),
     "3-4-3": (1, 3, 4, 3),
+}
+
+MODULE_POSITIONS: Mapping[str, tuple[tuple[str, ...], ...]] = {
+    "4-3-3": (("por",), ("dc", "dc", "dd", "ds"), ("m", "c", "t"), ("pc", "a", "a")),
+    "3-5-2": (("por",), ("dc", "dc", "dc"), ("e", "m", "c", "c", "e"), ("pc", "pc")),
+    "4-4-2": (("por",), ("dc", "dc", "dd", "ds"), ("e", "m", "c", "e"), ("pc", "pc")),
+    "3-4-3": (("por",), ("dc", "dc", "dc"), ("e", "m", "c", "e"), ("a", "pc", "a")),
 }
 
 
@@ -92,23 +99,31 @@ class CoverageRecommendation:
 
 
 @dataclass(frozen=True)
-class FormationLine:
-    """Una riga della formazione (XI): gruppo, posti di modulo, titolari."""
+class PositionSlot:
+    """Una posizione del modulo: ruolo Mantra richiesto e titolare assegnato."""
+
+    role: Role
+    player: Player | None
+
+
+@dataclass(frozen=True)
+class FormationPosition:
+    """Una riga della formazione (XI): gruppo e posizioni vincolate per ruolo."""
 
     group: RoleGroup
-    lineup_count: int
-    players: tuple[Player, ...]
+    positions: tuple[PositionSlot, ...]
 
 
-def formation_lines(
+def formation_positions(
     module: str,
     own_players: Sequence[Player],
-) -> tuple[FormationLine, ...]:
-    """Le righe della formazione per il modulo, riempite con i propri presi.
+) -> tuple[FormationPosition, ...]:
+    """Le righe della formazione per il modulo, con posizioni Mantra vincolate.
 
-    Per ogni gruppo ruolo (P, D, C, A) prende i primi `lineup_count`
-    giocatori propri in ordine di presa; se ne mancano, la riga ne ha meno
-    (i placeholder li disegna la UI).
+    Per ogni riga (P, D, C, A) e per ogni posizione (ruolo richiesto dal
+    template del modulo) assegna il primo giocatore proprio libero con quel
+    ruolo esatto; le posizioni senza un giocatore disponibile restano con
+    `player=None` (ruolo scoperto).
 
     Args:
         module: preset modulo (chiave di `MODULES`).
@@ -116,17 +131,26 @@ def formation_lines(
             presa.
 
     Returns:
-        Una `FormationLine` per gruppo, nell'ordine P, D, C, A.
+        Una `FormationPosition` per gruppo, nell'ordine P, D, C, A.
     """
-    counts = MODULES.get(module, MODULES[DEFAULT_MODULE])
-    lines: list[FormationLine] = []
-    for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A):
-        count = counts[_GROUP_INDEX[group]]
-        players = tuple(player for player in own_players if ROLE_GROUP[player.role] is group)[
-            :count
-        ]
-        lines.append(FormationLine(group=group, lineup_count=count, players=players))
+    template = MODULE_POSITIONS.get(module, MODULE_POSITIONS[DEFAULT_MODULE])
+    unused = list(own_players)
+    lines: list[FormationPosition] = []
+    for group, role_names in zip(_LINE_GROUPS, template, strict=True):
+        slots: list[PositionSlot] = []
+        for role_name in role_names:
+            role = Role(role_name)
+            player = next((p for p in unused if p.role is role), None)
+            if player is not None:
+                unused.remove(player)
+            slots.append(PositionSlot(role=role, player=player))
+        lines.append(FormationPosition(group=group, positions=tuple(slots)))
     return tuple(lines)
+
+
+def missing_roles(line: FormationPosition) -> tuple[str, ...]:
+    """Ruoli Mantra scoperti di una riga della formazione (es. ("dd", "ds"))."""
+    return tuple(slot.role.value for slot in line.positions if slot.player is None)
 
 
 @dataclass(frozen=True)
@@ -526,3 +550,5 @@ _GROUP_INDEX: Mapping[RoleGroup, int] = {
     RoleGroup.C: 2,
     RoleGroup.A: 3,
 }
+
+_LINE_GROUPS = (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A)

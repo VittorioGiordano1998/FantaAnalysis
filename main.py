@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-from entities import GROUP_LABELS, ROLE_GROUP, ROLE_LABELS, RoleGroup, TakenPick
+from entities import GROUP_LABELS, ROLE_GROUP, ROLE_LABELS, Role, RoleGroup, TakenPick
 from export_excel import build_report
 from fetch_fixtures import get_calendario
 from fetch_quotazioni import cache_mtime, get_quotazioni
@@ -48,7 +48,8 @@ from utility import (
     coverage_recommendations,
     coverage_suggestions,
     easy_candidates,
-    formation_lines,
+    formation_positions,
+    missing_roles,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
@@ -277,17 +278,22 @@ def _render_formazione() -> None:
     own_players = [p for p in players if p.url in own_urls]
     slots = slots_remaining(state, players)
 
-    for line in formation_lines(module, own_players):
+    for line in formation_positions(module, own_players):
         st.caption(GROUP_LABELS[line.group])
-        cols = st.columns(line.lineup_count)
+        cols = st.columns(len(line.positions))
         for index, col in enumerate(cols):
+            slot = line.positions[index]
             with col.container(border=True):
-                if index < len(line.players):
-                    player = line.players[index]
-                    st.markdown(f"**{player.name}**")
-                    st.caption(player.team_name)
+                if slot.player is not None:
+                    st.markdown(f"**{slot.player.name}**")
+                    st.caption(slot.player.team_name)
+                    st.caption(ROLE_LABELS[slot.role])
                 else:
                     st.markdown("—")
+                    st.caption(ROLE_LABELS[slot.role])
+        missing = missing_roles(line)
+        if missing:
+            st.caption("Mancano: " + ", ".join(ROLE_LABELS[Role(role)] for role in missing))
     owned = " · ".join(
         f"{GROUP_SHORT[group]} {ROSA_SLOTS[group] - slots.get(group, 0)}/{ROSA_SLOTS[group]}"
         for group in (RoleGroup.P, RoleGroup.D, RoleGroup.C, RoleGroup.A)

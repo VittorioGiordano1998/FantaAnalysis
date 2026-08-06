@@ -16,7 +16,8 @@ from utility import (
     coverage_recommendations,
     coverage_suggestions,
     easy_candidates,
-    formation_lines,
+    formation_positions,
+    missing_roles,
     opponent_outlook,
     team_strengths_from_players,
     utility_score,
@@ -452,24 +453,56 @@ def _own_roster() -> list[Player]:
     ]
 
 
-def test_formation_lines_fills_module_counts_in_pick_order():
+def test_formation_positions_assigns_exact_roles():
     own = _own_roster()
-    lines = formation_lines("4-3-3", own)
-    assert [line.lineup_count for line in lines] == [1, 4, 3, 3]
-    assert [len(line.players) for line in lines] == [1, 4, 3, 3]
-    assert [line.players[0].url for line in lines] == ["/p/p1", "/p/d1", "/p/c1", "/p/a1"]
-    assert lines[1].players[3].url == "/p/d4"
-    assert all(player.url != "/p/d5" for player in lines[1].players)
+    lines = formation_positions("4-3-3", own)
+    assert [line.group for line in lines] == [
+        RoleGroup.P,
+        RoleGroup.D,
+        RoleGroup.C,
+        RoleGroup.A,
+    ]
+    d_line = lines[1]
+    assert [slot.role for slot in d_line.positions] == [
+        Role.DC,
+        Role.DC,
+        Role.DD,
+        Role.DS,
+    ]
+    assert [slot.player.name for slot in d_line.positions] == ["D1", "D5", "D2", "D3"]
+    assert missing_roles(d_line) == ()
+    assert missing_roles(lines[0]) == ()
 
 
-def test_formation_lines_respects_module():
+def test_formation_positions_repeated_roles_use_distinct_players():
     own = _own_roster()
-    lines = formation_lines("3-5-2", own)
-    assert [line.lineup_count for line in lines] == [1, 3, 5, 2]
-    assert [len(line.players) for line in lines] == [1, 3, 5, 2]
+    lines = formation_positions("4-4-2", own)
+    a_line = lines[3]
+    assert [slot.role for slot in a_line.positions] == [Role.PC, Role.PC]
+    assert {slot.player.name for slot in a_line.positions} == {"A1", "A4"}
 
 
-def test_formation_lines_empty_roster():
-    lines = formation_lines("3-5-2", [])
-    assert [line.lineup_count for line in lines] == [1, 3, 5, 2]
-    assert all(line.players == () for line in lines)
+def test_formation_positions_flags_missing_roles():
+    own = [
+        _player("D1", Role.DC, "A", "/p/d1"),
+        _player("D2", Role.DC, "A", "/p/d2"),
+        _player("C1", Role.C, "A", "/p/c1"),
+    ]
+    lines = formation_positions("4-4-2", own)
+    d_line = lines[1]
+    assert missing_roles(d_line) == ("dd", "ds")
+    assert [slot.player for slot in d_line.positions] == [
+        own[0],
+        own[1],
+        None,
+        None,
+    ]
+    c_line = lines[2]
+    assert missing_roles(c_line) == ("e", "m", "e")
+
+
+def test_formation_positions_empty_roster():
+    lines = formation_positions("3-5-2", [])
+    assert [len(line.positions) for line in lines] == [1, 3, 5, 2]
+    assert all(slot.player is None for line in lines for slot in line.positions)
+    assert missing_roles(lines[1]) == ("dc", "dc", "dc")

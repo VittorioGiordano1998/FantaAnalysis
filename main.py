@@ -325,7 +325,7 @@ def _render_alternative(
 
 
 def main() -> None:
-    st.title("FantaOptimizer")
+    st.title(f"FantaOptimizer — v{_app_version()}")
     st.caption("Asta Serie A 2026/27 — regolamento Mantra")
 
     if "aggiorna_dati" not in st.session_state:

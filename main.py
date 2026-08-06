@@ -217,7 +217,6 @@ def _render_copertura_giocatore() -> None:
     budget = st.number_input(
         "Budget massimo per i suggerimenti (crediti)",
         min_value=0,
-        max_value=state.budget,
         value=max(0, state_budget),
         step=10,
         key="cover_budget",
@@ -288,11 +287,6 @@ def _render_copertura_giocatore() -> None:
         )
 
 
-def _fmt_share(share: float | None) -> str:
-    """Titolarietà percentuale o "—" se non stimabile."""
-    return f"{share * 100:.0f}%" if share is not None else "—"
-
-
 def _render_alternative(
     picks: tuple[GreedyPick, ...],
     title: str,
@@ -316,11 +310,8 @@ def _render_alternative(
                 "squadra": pick.player.team_name,
                 "ruolo": "/".join(role.value.upper() for role in player_roles(pick.player)),
                 "qi": pick.player.quote.qi,
-                "titolarita": _fmt_share(starter_share(pick.player, league)),
                 "punti": round(project(pick.player, league).total_points, 1),
                 "aggiunte": ", ".join(str(week) for week in pick.added_weeks),
-                "coperte": len(pick.covered_weeks),
-                "costo": pick.cost,
             }
             for pick in picks
         ]
@@ -332,11 +323,8 @@ def _render_alternative(
             "squadra": st.column_config.TextColumn("Squadra"),
             "ruolo": st.column_config.TextColumn("Ruolo"),
             "qi": st.column_config.NumberColumn("QI (pagalo max)"),
-            "titolarita": st.column_config.TextColumn("Titolarietà"),
             "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
             "aggiunte": st.column_config.TextColumn("Giornate aggiunte"),
-            "coperte": st.column_config.NumberColumn("Coperte cum."),
-            "costo": st.column_config.NumberColumn("Costo cum."),
         },
         hide_index=True,
         width="stretch",

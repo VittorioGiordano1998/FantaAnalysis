@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test end-to-end (`tests/test_e2e.py`): asta simulata con dati reali dalle fixture,
   dalla prima presa alla rosa finale (stato → proiezione → ottimizzazione → limite di
   spesa → export/import).
+- Nuova pagina `pages/GuidaAsta.py` (M8-T9): guida asta per squadra in stile FantaLab —
+  selettore squadra e rosa completa raggruppata per gruppo ruolo con QI/QA/FVM, media
+  voto, presenze e stato all'asta (libero/preso).
 
 ### Changed
 

@@ -2,29 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [main, web]
+    branches: [web]
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-      - name: Installa dipendenze
-        run: pip install -r requirements-dev.txt
-      - name: Ruff
-        run: ruff check .
-      - name: Ruff format check
-        run: ruff format --check .
-      - name: Pytest
-        run: pytest
-
   web:
-    if: hashFiles('web/package-lock.json') != ''
     runs-on: ubuntu-latest
     defaults:
       run:

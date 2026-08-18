@@ -69,3 +69,21 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
 - Limitazione: se l'utente aggiorna il file Excel, deve ricopiarlo in
   `resources/listone.xlsx` e committare (su Cloud il repo è l'unica
   persistenza).
+
+## Follow-up (a tutto schermo, colori dalle regole del file)
+
+- `main.py`: rimosse sidebar, titolo, caption e filtri — resta solo la
+  tabella del listone a tutto schermo (`layout="wide"`,
+  `height="stretch"`, CSS che nasconde header/toolbar/footer di
+  Streamlit).
+- Copiate le regole di formattazione condizionale del file Excel
+  (Foglio1): riga presa da noi → verde `#B7E1CD`, presa da altri → rosso
+  `#E06666`; titolarità 95/75/50/25 → `#93C47D`/`#FFD966`/`#E69138`/
+  `#E06666`; FMV ≥ 6 → `#93C47D`, < 6 → `#E06666`. Stesso ordine di
+  priorità di Excel: le regole di cella vincono sul colore di riga nelle
+  loro colonne (pandas `Styler`).
+- Rimosse sidebar, titolo e caption; resta il check deploy (invisibile nel
+  funzionamento normale: protegge da deploy misti, `test_deploy_check.py`).
+- Verifica: `pytest` → 153/153; ruff puliti; render AppTest su file
+  reale senza eccezioni; Styler verificato su righe simulate (preso da
+  noi → verde, da altri → rosso).

@@ -47,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   FMV, rigorista, punizioni, angoli, preso da noi/altri) con ricerca per nome e filtri
   squadra/gruppo ruolo; nuovo modulo data `fetch_listone.py` (parsing Excel → entità
   `ListoneRow`, righe vuote escluse).
+- Listone a tutto schermo (seguito M9-T1): rimossi sidebar, titolo e filtri — `main.py`
+  mostra solo la tabella full-screen con le regole di colore copiate dal file Excel
+  (riga presa da noi = verde, presa da altri = rosso; titolarità 95/75/50/25 =
+  verde/giallo/arancio/rosso; FMV ≥ 6 = verde, < 6 = rosso).
 
 ### Changed
 

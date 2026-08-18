@@ -65,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `listone_spent`/`listone_remaining` in `state.py`; colonna "Prezzo" nella tabella
   per i presi da noi. Avvisi se si preme un pulsante senza selezione o se si segna
   "Preso da noi" senza prezzo (il mark non viene applicato).
+- Scala di priorità sulle specialità (seguito M9-T1): il file `resources/listone.xlsx`
+  aggiornato usa numeri (1, 2, 3 = primo/secondo/terzo tiratore o battitore) per
+  rigorista, punizioni e angoli; le colonne mostrano la priorità numerica (la vecchia
+  spunta "✔" residua viene letta come priorità 1).
 
 ### Changed
 

@@ -37,8 +37,8 @@ def test_read_listone_maps_all_columns(tmp_path):
                 "Squadra": "Atalanta",
                 "Titolarità": 95.0,
                 "FMV": 5.58,
-                "Rigorista": "",
-                "Punizioni": "",
+                "Rigorista": 2,
+                "Punizioni": 1,
                 "Angoli": "",
                 "Preso Noi": False,
                 "Preso Altri": False,
@@ -60,7 +60,7 @@ def test_read_listone_maps_all_columns(tmp_path):
                 "Squadra": "Inter",
                 "Titolarità": None,
                 "FMV": None,
-                "Rigorista": "✔",
+                "Rigorista": 1,
                 "Punizioni": "",
                 "Angoli": "✔",
                 "Preso Noi": True,
@@ -77,13 +77,13 @@ def test_read_listone_maps_all_columns(tmp_path):
     assert keeper.roles == (Role.POR,)
     assert keeper.titolarita == 95.0
     assert keeper.fmv == 5.58
-    assert not keeper.rigorista and not keeper.punizioni and not keeper.angoli
+    assert keeper.rigorista == 2 and keeper.punizioni == 1 and keeper.angoli is None
     assert not keeper.preso_noi and not keeper.preso_altri
 
     wing = rows[1]
     assert wing.roles == (Role.E, Role.W)
     assert wing.titolarita is None and wing.fmv is None
-    assert wing.rigorista and wing.angoli and not wing.punizioni
+    assert wing.rigorista == 1 and wing.punizioni is None and wing.angoli == 1
     assert wing.preso_noi and wing.preso_altri
 
 

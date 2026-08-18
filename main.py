@@ -175,9 +175,9 @@ def _listone_frame(rows: tuple, state: ListoneState) -> pd.DataFrame:
                 "squadra": row.team_name,
                 "titolarita": row.titolarita,
                 "fmv": row.fmv,
-                "rigorista": _flag(row.rigorista),
-                "punizioni": _flag(row.punizioni),
-                "angoli": _flag(row.angoli),
+                "rigorista": row.rigorista,
+                "punizioni": row.punizioni,
+                "angoli": row.angoli,
                 "prezzo": _price(row.name, state),
                 "stato": _merged_flag(row.preso_noi, row.preso_altri, state.flags.get(row.name)),
             }
@@ -191,11 +191,6 @@ def _price(name: str, state: ListoneState) -> int | None:
     if state.flags.get(name) != "noi":
         return None
     return state.prices.get(name)
-
-
-def _flag(value: bool) -> str:
-    """Spunta del listone (vuoto se assente)."""
-    return "✔" if value else ""
 
 
 def main() -> None:
@@ -266,9 +261,9 @@ def main() -> None:
             "squadra": st.column_config.TextColumn("Squadra"),
             "titolarita": st.column_config.NumberColumn("Titolarità %", format="%.0f"),
             "fmv": st.column_config.NumberColumn("FMV", format="%.2f"),
-            "rigorista": st.column_config.TextColumn("Rigorista"),
-            "punizioni": st.column_config.TextColumn("Punizioni"),
-            "angoli": st.column_config.TextColumn("Angoli"),
+            "rigorista": st.column_config.NumberColumn("Rigorista", format="%d"),
+            "punizioni": st.column_config.NumberColumn("Punizioni", format="%d"),
+            "angoli": st.column_config.NumberColumn("Angoli", format="%d"),
             "prezzo": st.column_config.NumberColumn("Prezzo", format="%d"),
         },
         hide_index=True,

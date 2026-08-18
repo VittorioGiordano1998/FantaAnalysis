@@ -67,9 +67,9 @@ def read_listone(path: Path | None = None) -> tuple[ListoneRow, ...]:
                 roles=tuple(role for column, role in _ROLE_COLUMNS if _flagged(raw, column)),
                 titolarita=_optional_float(raw, "Titolarità"),
                 fmv=_optional_float(raw, "FMV"),
-                rigorista=_flagged(raw, "Rigorista"),
-                punizioni=_flagged(raw, "Punizioni"),
-                angoli=_flagged(raw, "Angoli"),
+                rigorista=_optional_int(raw, "Rigorista"),
+                punizioni=_optional_int(raw, "Punizioni"),
+                angoli=_optional_int(raw, "Angoli"),
                 preso_noi=_optional_bool(raw, "Preso Noi"),
                 preso_altri=_optional_bool(raw, "Preso Altri"),
             )
@@ -92,6 +92,19 @@ def _optional_float(row: pd.Series, column: str) -> float | None:
     """Valore numerico opzionale (None per celle vuote/NaN)."""
     value = row.get(column)
     return None if pd.isna(value) else float(value)
+
+
+def _optional_int(row: pd.Series, column: str) -> int | None:
+    """Priorità numerica opzionale (1, 2, 3, ...; None se vuota).
+
+    La vecchia spunta "✔" del listone viene trattata come priorità 1.
+    """
+    value = row.get(column)
+    if pd.isna(value):
+        return None
+    if str(value).strip() == _CHECK_COLUMN:
+        return 1
+    return int(value)
 
 
 def _optional_bool(row: pd.Series, column: str) -> bool:

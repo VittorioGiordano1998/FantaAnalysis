@@ -135,8 +135,9 @@ class ListoneRow:
     """Riga del listone completo (file Excel dell'utente, display-only).
 
     Contiene tutte le informazioni del listone: ruoli Mantra nell'ordine
-    del file, squadra, titolarità (%), FMV, specialità (rigorista,
-    punizioni, angoli) e stato all'asta (preso dalla propria squadra / da
+    del file, squadra, titolarità (%), FMV, specialità con priorità
+    (rigorista, punizioni, angoli: 1 = primo tiratore/battitore, 2 =
+    secondo, ...) e stato all'asta (preso dalla propria squadra / da
     altri). Non partecipa alle proiezioni né all'ottimizzazione.
     """
 
@@ -145,9 +146,9 @@ class ListoneRow:
     roles: tuple[Role, ...]
     titolarita: float | None
     fmv: float | None
-    rigorista: bool
-    punizioni: bool
-    angoli: bool
+    rigorista: int | None
+    punizioni: int | None
+    angoli: int | None
     preso_noi: bool
     preso_altri: bool
 

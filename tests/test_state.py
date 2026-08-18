@@ -13,8 +13,10 @@ from state import (
     default_state,
     export_state,
     import_state,
+    load_listone_flags,
     load_state,
     remove_taken,
+    save_listone_flags,
     save_state,
     slots_remaining,
     spent_budget,
@@ -123,3 +125,29 @@ def test_slots_remaining_ignores_other_teams_and_unknown():
     state = add_taken(state, TakenPick("url-sconosciuta", "Io", 5))
     remaining = slots_remaining(state, PLAYERS)
     assert remaining[RoleGroup.P] == 2
+
+
+def test_listone_flags_round_trip(tmp_path):
+    path = tmp_path / "listone_flags.json"
+    flags = {"Carnesecchi": "noi", "Dimarco": "altri", "Zappacosta": ""}
+    save_listone_flags(flags, path)
+    assert load_listone_flags(path) == flags
+
+
+def test_listone_flags_missing_file_is_empty(tmp_path):
+    assert load_listone_flags(tmp_path / "assente.json") == {}
+
+
+def test_listone_flags_invalid_values_are_dropped(tmp_path):
+    path = tmp_path / "listone_flags.json"
+    path.write_text(
+        '{"Carnesecchi": "noi", "Dimarco": "forse", "Maldini": "altri"}',
+        encoding="utf-8",
+    )
+    assert load_listone_flags(path) == {"Carnesecchi": "noi", "Maldini": "altri"}
+
+
+def test_listone_flags_corrupt_file_is_empty(tmp_path):
+    path = tmp_path / "listone_flags.json"
+    path.write_text("non-json", encoding="utf-8")
+    assert load_listone_flags(path) == {}

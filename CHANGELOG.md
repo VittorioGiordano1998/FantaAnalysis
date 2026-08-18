@@ -51,6 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   mostra solo la tabella full-screen con le regole di colore copiate dal file Excel
   (riga presa da noi = verde, presa da altri = rosso; titolarità 95/75/50/25 =
   verde/giallo/arancio/rosso; FMV ≥ 6 = verde, < 6 = rosso).
+- Bottoni di presa nel listone (seguito M9-T1): le colonne "preso noi/altri" sono
+  sostituite dai pulsanti "Preso da noi"/"Preso da altri" — si selezionano una o più
+  righe della tabella e si preme il pulsante per segnare la presa (alternato:
+  ripremendo si libera). Stato persistito in `data/listone_flags.json` via `state.py`
+  (`load_listone_flags`/`save_listone_flags`), i flag del file Excel restano la base;
+  tabella a tutto schermo fino in fondo (CSS su `stDataFrameResizable`).
 
 ### Changed
 

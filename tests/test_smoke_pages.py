@@ -35,6 +35,7 @@ def _empty_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(fs, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(ff, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(st8, "STATE_FILE", tmp_path / "asta.json")
+    monkeypatch.setattr(st8, "LISTONE_FLAGS_FILE", tmp_path / "listone_flags.json")
     monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
     empty = pd.DataFrame()
     monkeypatch.setattr(fq, "get_quotazioni", lambda force_refresh=False, **kw: empty)
@@ -81,3 +82,65 @@ def test_main_renders_listone_when_file_present(monkeypatch, tmp_path):
     at = AppTest.from_file(ROOT / "main.py").run()
     assert not at.exception
     assert len(at.dataframe) == 1
+
+
+def test_main_marks_taken_with_buttons(monkeypatch, tmp_path):
+    pd.DataFrame(
+        [
+            {
+                "Giocatore": "Dimarco",
+                "P": "",
+                "Ds": "",
+                "B": "",
+                "Dc": "",
+                "Dd": "",
+                "E": "✔",
+                "M": "",
+                "C": "",
+                "T": "",
+                "W": "✔",
+                "A": "",
+                "Pc": "",
+                "Squadra": "Inter",
+                "Titolarità": None,
+                "FMV": None,
+                "Rigorista": "",
+                "Punizioni": "",
+                "Angoli": "",
+                "Preso Noi": False,
+                "Preso Altri": False,
+            }
+        ]
+    ).to_excel(tmp_path / "listone.xlsx", index=False)
+    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
+    st.cache_data.clear()
+    at = AppTest.from_file(ROOT / "main.py").run()
+    assert len(at.button) == 2
+    at.button(key="mark_noi").click()
+    at.run()
+    assert not at.exception
+    assert at.session_state["listone_flags"] == {}
+
+
+def test_merged_flag_prefers_session_then_excel():
+    from main import _merged_flag
+
+    assert _merged_flag(True, False, None) == "noi"
+    assert _merged_flag(False, True, None) == "altri"
+    assert _merged_flag(False, False, None) == ""
+    assert _merged_flag(True, False, "") == ""
+    assert _merged_flag(False, True, "noi") == "noi"
+
+
+def test_toggle_flags_cycles_owner_and_release():
+    from main import _toggle_flags
+
+    flags: dict[str, str] = {}
+    _toggle_flags(flags, ["Dimarco"], "noi")
+    assert flags == {"Dimarco": "noi"}
+    _toggle_flags(flags, ["Dimarco"], "noi")
+    assert flags == {"Dimarco": ""}
+    _toggle_flags(flags, ["Dimarco"], "altri")
+    assert flags == {"Dimarco": "altri"}
+    _toggle_flags(flags, ["Dimarco", "Zappacosta"], "noi")
+    assert flags == {"Dimarco": "noi", "Zappacosta": "noi"}

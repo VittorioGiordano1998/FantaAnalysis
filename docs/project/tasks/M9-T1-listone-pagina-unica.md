@@ -87,3 +87,22 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
 - Verifica: `pytest` → 153/153; ruff puliti; render AppTest su file
   reale senza eccezioni; Styler verificato su righe simulate (preso da
   noi → verde, da altri → rosso).
+
+## Follow-up 2 (bottoni di presa + tabella fino in fondo)
+
+- Le colonne "preso noi"/"preso altri" sono sostituite dai pulsanti
+  "Preso da noi" / "Preso da altri" nella toolbar in alto: si selezionano
+  una o più righe della tabella (`on_select="rerun"`,
+  `selection_mode="multi-row"`) e si preme il pulsante per segnare la
+  presa; ripremendo si libera (toggle).
+- Stato persistito in `data/listone_flags.json` — `state.py` ora ha
+  `LISTONE_FLAGS_FILE` + `load_listone_flags`/`save_listone_flags`
+  (mappa nome giocatore → "noi" | "altri" | ""); i flag del file Excel
+  restano la base (`_merged_flag`: sessione prima, poi Excel).
+- Tabella a tutto schermo fino in fondo: CSS su
+  `[data-testid="stDataFrameResizable"]` (height 100vh − toolbar).
+- Test: `test_state.py` +4 (round-trip, file assente, valori invalidi,
+  file corrotto); `test_smoke_pages.py` bottoni presenti + click senza
+  crash + unit di `_merged_flag`/`_toggle_flags`.
+- Verifica: `pytest` → 160/160; ruff puliti; render reale: 352 righe, 2
+  bottoni, colonna "stato" nascosta, colori su righe simulate.

@@ -23,6 +23,8 @@ from optimize import DEFAULT_BUDGET, ROSA_SLOTS
 logger = logging.getLogger(__name__)
 
 STATE_FILE = Path("data") / "asta.json"
+LISTONE_FLAGS_FILE = Path("data") / "listone_flags.json"
+_VALID_FLAG_OWNERS = ("noi", "altri", "")
 _VERSION = 1
 
 
@@ -140,6 +142,44 @@ def remove_taken(state: AuctionState, player_url: str) -> AuctionState:
         own_team=state.own_team,
         taken=tuple(pick for pick in state.taken if pick.player_url != player_url),
     )
+
+
+def load_listone_flags(path: Path | None = None) -> dict[str, str]:
+    """Mappa giocatore → "noi"/"altri" dalle prese segnate nel listone.
+
+    File assente o corrotto → vuota; i valori non validi vengono scartati.
+    "" = giocatore libero esplicito (sovrascrive il file Excel).
+
+    Args:
+        path: percorso del JSON (per i test, `tmp_path`).
+
+    Returns:
+        Dict nome giocatore → "noi" | "altri" | "".
+    """
+    flags_file = path or LISTONE_FLAGS_FILE
+    if not flags_file.is_file():
+        return {}
+    try:
+        payload = json.loads(flags_file.read_text(encoding="utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        logger.warning("Flag listone corrotti in %s: riparto da zero", flags_file)
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    return {str(name): str(owner) for name, owner in payload.items() if owner in _VALID_FLAG_OWNERS}
+
+
+def save_listone_flags(flags: Mapping[str, str], path: Path | None = None) -> None:
+    """Scrive i flag del listone su JSON (utf-8), creando la directory.
+
+    Args:
+        flags: mappa nome giocatore → "noi" | "altri" | "".
+        path: percorso di destinazione (default `data/listone_flags.json`).
+    """
+    flags_file = path or LISTONE_FLAGS_FILE
+    flags_file.parent.mkdir(parents=True, exist_ok=True)
+    payload = {name: owner for name, owner in flags.items() if owner in _VALID_FLAG_OWNERS}
+    flags_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
 
 
 def taken_urls(state: AuctionState) -> frozenset[str]:

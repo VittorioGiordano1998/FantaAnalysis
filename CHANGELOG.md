@@ -81,6 +81,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   con il listone stantio (es. giocatori rimossi/aggiunti) mostra l'errore "Deploy
   misto". Versione visibile nella toolbar (v0.15.0); `LOGIC_VERSION`/`version.txt` →
   0.15.0.
+- Mega listone su stack Sphynx (`web/`, M10-T1, ADR-0006): nuova app Next.js 16 +
+  React 19 + TypeScript + Tailwind 4 in `web/` (branch `web/`) con `output: 'export'`,
+  tema scuro Sphynx (palette `.dark` da `globals.css`), tabella dati con badge/dot
+  stato, chip priorità (rigorista/punizioni/angoli), prese noi/altri con prezzo e
+  budget residuo, filtri nome/squadra/gruppo ruolo, export/import dello stato
+  (local-first, `localStorage`). Fonte dati `web/src/data/listone.json` versionato,
+  generato da `Listone.xlsx` con `tools/convert_listone.py` (stesso schema di
+  `fetch_listone.read_listone`). Test logic portati in Vitest
+  (`web/test/listone-state.test.ts`) e test del convertitore in pytest
+  (`tests/test_convert_listone.py`); CI: job `web` aggiunto a `ci.yml`. Deploy:
+  Vercel sul ramo `web/` (azione manuale utente).
 
 ### Changed
 

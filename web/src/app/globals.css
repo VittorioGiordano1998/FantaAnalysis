@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/* Tema scuro Sphynx (copia di Sphynx/src/app/globals.css `.dark`): la app è
+   dark-only, i valori vanno direttamente su `:root`. */
+:root {
+  color-scheme: dark;
+  --background: oklch(0.145 0.003 140);
+  --foreground: oklch(0.96 0.005 80);
+  --card: oklch(0.13 0.003 140);
+  --card-foreground: oklch(0.96 0.005 80);
+  --popover: oklch(0.13 0.003 140);
+  --popover-foreground: oklch(0.96 0.005 80);
+  --primary: oklch(0.7 0.07 78);
+  --primary-foreground: oklch(0.13 0.003 140);
+  --secondary: oklch(0.47 0.06 75);
+  --secondary-foreground: oklch(0.96 0.005 80);
+  --muted: oklch(0.18 0.003 130);
+  --muted-foreground: oklch(0.62 0.03 75);
+  --accent: oklch(0.87 0.04 82);
+  --accent-foreground: oklch(0.13 0.003 140);
+  --destructive: oklch(0.6 0.19 27);
+  --border: oklch(0.28 0.005 140);
+  --input: oklch(0.3 0.005 140);
+  --ring: oklch(0.7 0.07 78);
+  --radius: 0.75rem;
+  --scrollbar-thumb: oklch(1 0 0 / 10%);
+  --scrollbar-thumb-hover: oklch(1 0 0 / 18%);
+}
+
+* {
+  border-color: var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Headings in stile Sphynx */
+main h1 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Superfici "glass" Sphynx */
+.glass {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px oklch(0 0 0 / 7%);
+  border-radius: var(--radius);
+}
+
+.glass-strong {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px oklch(0 0 0 / 10%);
+  border-radius: var(--radius);
+}

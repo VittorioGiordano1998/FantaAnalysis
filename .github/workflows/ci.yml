@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, web]
   pull_request:
 
 jobs:
@@ -22,3 +22,27 @@ jobs:
         run: ruff format --check .
       - name: Pytest
         run: pytest
+
+  web:
+    if: hashFiles('web/package-lock.json') != ''
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Installa dipendenze
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm test
+      - name: Build (static export)
+        run: npm run build
+      - name: Typecheck
+        run: npm run typecheck

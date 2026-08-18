@@ -45,6 +45,34 @@ ui → logic ← data
 
 mai la direzione inversa.
 
+## Web (mega listone, Next.js in stile Sphynx)
+
+Sul branch `web/` vive una app **Next.js** (stack di Sphynx: React 19 + TypeScript +
+Tailwind 4) che riproduce il **mega listone** (stessi campi, prese noi/altri, prezzo,
+budget) con il tema scuro Sphynx. Piano in [`PLANNING-WEB.md`](PLANNING-WEB.md),
+ADR-0006.
+
+```bash
+cd web
+npm ci
+npm run dev        # sviluppo: http://localhost:3000
+npm run build      # export statico in web/out
+npm run preview    # serve l'export statico (richiede npx serve)
+```
+
+- **Fonte dati:** `web/src/data/listone.json` (versionato). Dopo aver aggiornato
+  `resources/listone.xlsx` rigenera il JSON e committalo:
+
+  ```bash
+  python tools/convert_listone.py
+  ```
+
+- **Stato (local-first):** salvato nel browser (`localStorage`), **per device**; usa i
+  pulsanti *Importa/Esporta* in alto per spostarlo tra telefono e desktop.
+- **Deploy:** Vercel, branch `web/` (static export). Streamlit Cloud resta per le altre
+  pagine sul ramo `deploy`.
+- **Verifica:** `npm run lint`, `npm run test`, `npm run typecheck`; CI sul branch `web/`.
+
 ## Contribuire
 
 Vedi [`CONTRIBUTING.md`](CONTRIBUTING.md) per branch, commit, code style e convenzioni PR.

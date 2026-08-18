@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "combos": [
+    {
+      "team1": "Atalanta",
+      "team2": "Parma",
+      "rating": 89,
+      "src": "/combinazioni_portieri/AtalantaParma89.png"
+    },
+    {
+      "team1": "Atalanta",
+      "team2": "Sassuolo",
+      "rating": 91,
+      "src": "/combinazioni_portieri/AtalantaSassuolo91.png"
+    },
+    {
+      "team1": "Bologna",
+      "team2": "Inter",
+      "rating": 92,
+      "src": "/combinazioni_portieri/BolognaInter92.png"
+    },
+    {
+      "team1": "Bologna",
+      "team2": "Roma",
+      "rating": 91,
+      "src": "/combinazioni_portieri/BolognaRoma91.png"
+    },
+    {
+      "team1": "Bologna",
+      "team2": "Venezia",
+      "rating": 89,
+      "src": "/combinazioni_portieri/BolognaVenezia89.png"
+    },
+    {
+      "team1": "Cagliari",
+      "team2": "Inter",
+      "rating": 92,
+      "src": "/combinazioni_portieri/CagliariInter92.png"
+    },
+    {
+      "team1": "Cagliari",
+      "team2": "Juventus",
+      "rating": 91,
+      "src": "/combinazioni_portieri/CagliariJuventus91.png"
+    },
+    {
+      "team1": "Cagliari",
+      "team2": "Milan",
+      "rating": 89,
+      "src": "/combinazioni_portieri/CagliariMilan89.png"
+    },
+    {
+      "team1": "Como",
+      "team2": "Fiorentina",
+      "rating": 89,
+      "src": "/combinazioni_portieri/ComoFiorentina89.png"
+    },
+    {
+      "team1": "Como",
+      "team2": "Sassuolo",
+      "rating": 89,
+      "src": "/combinazioni_portieri/ComoSassuolo89.png"
+    },
+    {
+      "team1": "Como",
+      "team2": "Torino",
+      "rating": 89,
+      "src": "/combinazioni_portieri/ComoTorino89.png"
+    },
+    {
+      "team1": "Como",
+      "team2": "Udinese",
+      "rating": 92,
+      "src": "/combinazioni_portieri/ComoUdinese92.png"
+    },
+    {
+      "team1": "Fiorentina",
+      "team2": "Milan",
+      "rating": 91,
+      "src": "/combinazioni_portieri/FiorentinaMilan91.png"
+    },
+    {
+      "team1": "Inter",
+      "team2": "Monza",
+      "rating": 89,
+      "src": "/combinazioni_portieri/InterMonza89.png"
+    },
+    {
+      "team1": "Juventus",
+      "team2": "Torino",
+      "rating": 91,
+      "src": "/combinazioni_portieri/JuventusTorino91.png"
+    },
+    {
+      "team1": "Lazio",
+      "team2": "Lecce",
+      "rating": 91,
+      "src": "/combinazioni_portieri/LazioLecce91.png"
+    },
+    {
+      "team1": "Lecce",
+      "team2": "Napoli",
+      "rating": 92,
+      "src": "/combinazioni_portieri/LecceNapoli92.png"
+    },
+    {
+      "team1": "Milan",
+      "team2": "Lecce",
+      "rating": 89,
+      "src": "/combinazioni_portieri/MilanLecce89.png"
+    },
+    {
+      "team1": "Milan",
+      "team2": "Parma",
+      "rating": 89,
+      "src": "/combinazioni_portieri/MilanParma89.png"
+    },
+    {
+      "team1": "Milan",
+      "team2": "Sassuolo",
+      "rating": null,
+      "src": "/combinazioni_portieri/MilanSassuolo.png"
+    },
+    {
+      "team1": "Monza",
+      "team2": "Roma",
+      "rating": 89,
+      "src": "/combinazioni_portieri/MonzaRoma89.png"
+    },
+    {
+      "team1": "Napoli",
+      "team2": "Torino",
+      "rating": 89,
+      "src": "/combinazioni_portieri/NapoliTorino89.png"
+    },
+    {
+      "team1": "Roma",
+      "team2": "Venezia",
+      "rating": 89,
+      "src": "/combinazioni_portieri/RomaVenezia89.png"
+    }
+  ]
+}

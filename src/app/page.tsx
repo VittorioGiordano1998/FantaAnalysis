@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 
 import listoneData from "@/data/listone.json";
 import { StateExport } from "@/components/listone/state-export";
 import { ListoneTable, type ListoneRowView } from "@/components/listone/listone-table";
 import { Toolbar, type GroupFilter } from "@/components/listone/toolbar";
+import { SectionNav } from "@/components/section-nav";
 import { listoneRemaining, useListone } from "@/lib/listone-state";
 import type { ListoneRow, PlayerStatus } from "@/lib/types";
 import { GROUP_BY_ROLE, mergedStatus } from "@/lib/types";
@@ -107,12 +107,7 @@ export default function ListonePage() {
           <p className="text-xs text-muted-foreground">FantaOptimizer · v{APP_VERSION}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/formazioni"
-            className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border/70 bg-muted/40 px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/70 hover:text-foreground"
-          >
-            Probabili formazioni
-          </Link>
+          <SectionNav current="/" />
           <StateExport onMessage={(text, kind) => setMessage({ text, kind })} />
         </div>
       </header>

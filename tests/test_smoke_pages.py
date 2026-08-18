@@ -6,6 +6,7 @@ Riproduce l'ambiente Cloud all'avvio: `data/` vuota, nessuna chiamata di
 rete, nessun filesystem reale.
 """
 
+import hashlib
 from pathlib import Path
 
 import pandas as pd
@@ -43,41 +44,50 @@ def _empty_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(ff, "get_calendario", lambda force_refresh=False, **kw: empty)
 
 
+def _write_listone(monkeypatch, tmp_path, rows) -> None:
+    """Scrive il listone di prova in tmp_path e allinea l'hash atteso."""
+    path = tmp_path / "listone.xlsx"
+    pd.DataFrame(rows).to_excel(path, index=False)
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    monkeypatch.setattr(fl, "LISTONE_FILE_SHA256", digest)
+
+
 @pytest.mark.parametrize("script", PAGES)
 def test_page_boots_without_exception(script):
     at = AppTest.from_file(script).run()
     assert not at.exception, f"{script}: {at.exception}"
 
 
+def _dimarco_row() -> dict:
+    return {
+        "Giocatore": "Dimarco",
+        "P": "",
+        "Ds": "",
+        "B": "",
+        "Dc": "",
+        "Dd": "",
+        "E": "✔",
+        "M": "",
+        "C": "",
+        "T": "",
+        "W": "✔",
+        "A": "",
+        "Pc": "",
+        "Squadra": "Inter",
+        "Titolarità": None,
+        "FMV": None,
+        "Rigorista": "",
+        "Punizioni": "",
+        "Angoli": "",
+        "Preso Noi": False,
+        "Preso Altri": False,
+    }
+
+
 def test_main_renders_listone_when_file_present(monkeypatch, tmp_path):
-    pd.DataFrame(
-        [
-            {
-                "Giocatore": "Dimarco",
-                "P": "",
-                "Ds": "",
-                "B": "",
-                "Dc": "",
-                "Dd": "",
-                "E": "✔",
-                "M": "",
-                "C": "",
-                "T": "",
-                "W": "✔",
-                "A": "",
-                "Pc": "",
-                "Squadra": "Inter",
-                "Titolarità": 75.0,
-                "FMV": 6.2,
-                "Rigorista": "",
-                "Punizioni": "",
-                "Angoli": "✔",
-                "Preso Noi": False,
-                "Preso Altri": False,
-            }
-        ]
-    ).to_excel(tmp_path / "listone.xlsx", index=False)
-    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
+    _write_listone(
+        monkeypatch, tmp_path, [{**_dimarco_row(), "Titolarità": 75.0, "FMV": 6.2, "Angoli": "✔"}]
+    )
     st.cache_data.clear()
     at = AppTest.from_file(ROOT / "main.py").run()
     assert not at.exception
@@ -85,34 +95,7 @@ def test_main_renders_listone_when_file_present(monkeypatch, tmp_path):
 
 
 def test_main_marks_taken_with_buttons(monkeypatch, tmp_path):
-    pd.DataFrame(
-        [
-            {
-                "Giocatore": "Dimarco",
-                "P": "",
-                "Ds": "",
-                "B": "",
-                "Dc": "",
-                "Dd": "",
-                "E": "✔",
-                "M": "",
-                "C": "",
-                "T": "",
-                "W": "✔",
-                "A": "",
-                "Pc": "",
-                "Squadra": "Inter",
-                "Titolarità": None,
-                "FMV": None,
-                "Rigorista": "",
-                "Punizioni": "",
-                "Angoli": "",
-                "Preso Noi": False,
-                "Preso Altri": False,
-            }
-        ]
-    ).to_excel(tmp_path / "listone.xlsx", index=False)
-    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
+    _write_listone(monkeypatch, tmp_path, [_dimarco_row()])
     st.cache_data.clear()
     at = AppTest.from_file(ROOT / "main.py").run()
     assert len(at.button) == 2
@@ -124,34 +107,7 @@ def test_main_marks_taken_with_buttons(monkeypatch, tmp_path):
 
 
 def test_main_warns_when_no_selection(monkeypatch, tmp_path):
-    pd.DataFrame(
-        [
-            {
-                "Giocatore": "Dimarco",
-                "P": "",
-                "Ds": "",
-                "B": "",
-                "Dc": "",
-                "Dd": "",
-                "E": "✔",
-                "M": "",
-                "C": "",
-                "T": "",
-                "W": "✔",
-                "A": "",
-                "Pc": "",
-                "Squadra": "Inter",
-                "Titolarità": None,
-                "FMV": None,
-                "Rigorista": "",
-                "Punizioni": "",
-                "Angoli": "",
-                "Preso Noi": False,
-                "Preso Altri": False,
-            }
-        ]
-    ).to_excel(tmp_path / "listone.xlsx", index=False)
-    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
+    _write_listone(monkeypatch, tmp_path, [_dimarco_row()])
     st.cache_data.clear()
     at = AppTest.from_file(ROOT / "main.py").run()
     at.button(key="mark_noi").click()

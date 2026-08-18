@@ -149,6 +149,24 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
   `fetch_listone.LISTONE_PARSER_VERSION` == 2, così il deploy misto viene
   rilevato e mostrato come errore; `LOGIC_VERSION` e `version.txt`
   allineati a 0.14.0.
+
+## Follow-up 5 (integrità del file + versioni)
+
+- L'utente vedeva anche giocatori stantii (Lukaku) e solo "1"/vuoto al
+  posto di 1/2/3: Cloud serviva file di commit vecchi (parser booleano +
+  primo listone). Aggiunto `LISTONE_FILE_SHA256` in `fetch_listone.py`
+  (hash del file committato, da aggiornare a ogni ricopiatura) e
+  `deploy_ok` ora verifica versione + parser + hash del file.
+- Versione visibile nella toolbar (v0.15.0) per la diagnosi immediata;
+  `LOGIC_VERSION` e `version.txt` → 0.15.0.
+- Test: `test_deploy_check.py` riscritto con listone in `tmp_path` (hash
+  coerente/stantio/assente, parser vecchio); smoke test con helper
+  `_write_listone` che allinea l'hash al file di prova.
+- Verifica: `pytest` → 171/171; ruff puliti; `deploy_ok()` True sul repo,
+  render reale 351 righe con valori "", "1", "2", "3".
+- Azione utente: se l'app mostra ancora dati sbagliati o "Deploy misto",
+  rebuild pulito su Streamlit Cloud (Delete app → Create app dal branch
+  `deploy`, o cambia branch per forzare il checkout).
 - Verifica: parser su file reale — 351 giocatori, 58 rigoristi e 58
   battitori d'angolo con priorità 1-3, punizioni 1-2, Miranda J. → angoli
   3; `pytest` → 169/169; ruff puliti; render reale senza eccezioni e

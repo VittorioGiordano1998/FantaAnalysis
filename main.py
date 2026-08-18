@@ -11,6 +11,7 @@ Excel restano la base. Solo rendering e input: la lettura del file è
 delegata al layer data (`fetch_listone`).
 """
 
+import hashlib
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -68,21 +69,40 @@ def _app_version() -> str:
         return "?"
 
 
-def deploy_ok(version_file: Path = Path("version.txt")) -> bool:
-    """Vero se il deploy è coerente: `version.txt` == versione della logica.
+def deploy_ok(
+    version_file: Path = Path("version.txt"),
+    listone_file: Path | None = None,
+) -> bool:
+    """Vero se il deploy è coerente: versione, parser e file del listone.
 
     Streamlit Cloud può servire file di commit diversi (main.py nuovo con
-    `utility.py` vecchia): il confronto rende il deploy misto visibile
-    subito invece di produrre numeri sbagliati in silenzio. Verifica anche
-    che il parser del listone abbia lo schema atteso (priorità numeriche:
-    un parser vecchio produce "True"/"False" al posto di 1/2/3).
+    `utility.py` o `fetch_listone.py` vecchi): il confronto rende il deploy
+    misto visibile subito invece di produrre numeri sbagliati in silenzio.
+    Verifica che:
+    - `version.txt` == versione della logica;
+    - il parser del listone abbia lo schema atteso (priorità numeriche: un
+      parser vecchio produce "True"/"False" al posto di 1/2/3);
+    - il file del listone servito sia quello committato (hash SHA-256:
+      un file stantio mostra giocatori rimossi/aggiunti).
     """
     try:
         version_ok = version_file.read_text(encoding="utf-8").strip() == LOGIC_VERSION
     except OSError:
         return False
-    listone_ok = fetch_listone.LISTONE_PARSER_VERSION == _EXPECTED_LISTONE_PARSER_VERSION
-    return version_ok and listone_ok
+    parser_ok = fetch_listone.LISTONE_PARSER_VERSION == _EXPECTED_LISTONE_PARSER_VERSION
+    file_ok = _listone_file_ok(
+        listone_file if listone_file is not None else fetch_listone.LISTONE_PATH
+    )
+    return version_ok and parser_ok and file_ok
+
+
+def _listone_file_ok(path: Path) -> bool:
+    """Vero se l'hash del file coincide con quello del listone committato."""
+    try:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return False
+    return digest == fetch_listone.LISTONE_FILE_SHA256
 
 
 def _row_style(row: pd.Series, stati: Sequence[str]) -> list[str]:
@@ -271,7 +291,9 @@ def main() -> None:
             if remaining >= 0
             else f"Sei sopra budget di {-remaining} crediti"
         )
-        st.caption(f"{budget_text} — verde = preso da noi, rosso = preso da altri.")
+        st.caption(
+            f"{budget_text} — verde = preso da noi, rosso = preso da altri. (v{_app_version()})"
+        )
 
     selection = st.dataframe(
         _style_frame(frame, stati),

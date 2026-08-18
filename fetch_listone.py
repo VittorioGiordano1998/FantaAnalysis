@@ -26,6 +26,11 @@ LISTONE_PATH = Path("resources") / "listone.xlsx"
 # vecchio servito con main.py nuovo → colonne booleane invece delle priorità).
 LISTONE_PARSER_VERSION = 2
 
+# Hash SHA-256 del file `resources/listone.xlsx` committato: rileva i deploy
+# che servono un listone stantio (giocatori rimossi/aggiunti). Va aggiornato
+# ogni volta che si ricopia il file dell'utente nel repo.
+LISTONE_FILE_SHA256 = "0bc4a87bf373e7f3460fd695e3ff9a412ef46a7ffa13601d411b13ccac49b680"
+
 _ROLE_COLUMNS = (
     ("P", Role.POR),
     ("Ds", Role.DS),

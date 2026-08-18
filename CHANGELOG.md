@@ -75,6 +75,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ora è tollerante ai bool (True → 1, False → vuoto) e il check deploy verifica anche
   `fetch_listone.LISTONE_PARSER_VERSION` (schema atteso 2); `LOGIC_VERSION` e
   `version.txt` allineati a 0.14.0.
+- Verifica integrità listone (seguito M9-T1): `deploy_ok` confronta anche l'hash
+  SHA-256 del file `resources/listone.xlsx` servito con `LISTONE_FILE_SHA256`
+  (costante in `fetch_listone.py`, da aggiornare a ogni copia del file) — un deploy
+  con il listone stantio (es. giocatori rimossi/aggiunti) mostra l'errore "Deploy
+  misto". Versione visibile nella toolbar (v0.15.0); `LOGIC_VERSION`/`version.txt` →
+  0.15.0.
 
 ### Changed
 

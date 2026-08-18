@@ -57,6 +57,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ripremendo si libera). Stato persistito in `data/listone_flags.json` via `state.py`
   (`load_listone_flags`/`save_listone_flags`), i flag del file Excel restano la base;
   tabella a tutto schermo fino in fondo (CSS su `stDataFrameResizable`).
+- Prezzo pagato e budget residuo nel listone (seguito M9-T1): campo "Prezzo pagato"
+  nella toolbar (applicato ai selezionati, si azzera dopo il mark), campo "Budget
+  totale" modificabile (default 500) e caption "Residuo: X / Y crediti" (rosso se si
+  è sopra budget). `data/listone_flags.json` passa al formato v2 (budget, flag,
+  prezzi) con migrazione automatica dal v1; nuova entità `ListoneState` e funzioni
+  `listone_spent`/`listone_remaining` in `state.py`; colonna "Prezzo" nella tabella
+  per i presi da noi.
 
 ### Changed
 

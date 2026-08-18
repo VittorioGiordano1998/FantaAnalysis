@@ -17,7 +17,7 @@ import logging
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from entities import ROLE_GROUP, AuctionState, Player, RoleGroup, TakenPick
+from entities import ROLE_GROUP, AuctionState, ListoneState, Player, RoleGroup, TakenPick
 from optimize import DEFAULT_BUDGET, ROSA_SLOTS
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ STATE_FILE = Path("data") / "asta.json"
 LISTONE_FLAGS_FILE = Path("data") / "listone_flags.json"
 _VALID_FLAG_OWNERS = ("noi", "altri", "")
 _VERSION = 1
+_LISTONE_VERSION = 2
 
 
 def default_state(budget: int = DEFAULT_BUDGET) -> AuctionState:
@@ -144,42 +145,101 @@ def remove_taken(state: AuctionState, player_url: str) -> AuctionState:
     )
 
 
-def load_listone_flags(path: Path | None = None) -> dict[str, str]:
-    """Mappa giocatore → "noi"/"altri" dalle prese segnate nel listone.
+def load_listone_flags(path: Path | None = None) -> ListoneState:
+    """Stato delle prese del listone: budget, flag e prezzi pagati.
 
-    File assente o corrotto → vuota; i valori non validi vengono scartati.
-    "" = giocatore libero esplicito (sovrascrive il file Excel).
+    Legge `data/listone_flags.json` (formato v2); il vecchio formato piatto
+    (v1, mappa nome → "noi"/"altri") viene migrato con budget di default.
+    File assente o corrotto → stato iniziale; i valori non validi vengono
+    scartati.
 
     Args:
         path: percorso del JSON (per i test, `tmp_path`).
 
     Returns:
-        Dict nome giocatore → "noi" | "altri" | "".
+        `ListoneState` con budget, flags e prezzi.
     """
     flags_file = path or LISTONE_FLAGS_FILE
     if not flags_file.is_file():
-        return {}
+        return default_listone_state()
     try:
         payload = json.loads(flags_file.read_text(encoding="utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError):
         logger.warning("Flag listone corrotti in %s: riparto da zero", flags_file)
-        return {}
+        return default_listone_state()
     if not isinstance(payload, dict):
-        return {}
-    return {str(name): str(owner) for name, owner in payload.items() if owner in _VALID_FLAG_OWNERS}
+        return default_listone_state()
+    if payload.get("version") == _LISTONE_VERSION:
+        return _from_listone_payload(payload)
+    flags = {
+        str(name): str(owner) for name, owner in payload.items() if owner in _VALID_FLAG_OWNERS
+    }
+    return ListoneState(budget=DEFAULT_BUDGET, flags=flags)
 
 
-def save_listone_flags(flags: Mapping[str, str], path: Path | None = None) -> None:
-    """Scrive i flag del listone su JSON (utf-8), creando la directory.
+def save_listone_flags(state: ListoneState, path: Path | None = None) -> None:
+    """Scrive lo stato del listone su JSON (utf-8), creando la directory.
 
     Args:
-        flags: mappa nome giocatore → "noi" | "altri" | "".
+        state: stato da salvare.
         path: percorso di destinazione (default `data/listone_flags.json`).
     """
     flags_file = path or LISTONE_FLAGS_FILE
     flags_file.parent.mkdir(parents=True, exist_ok=True)
-    payload = {name: owner for name, owner in flags.items() if owner in _VALID_FLAG_OWNERS}
+    payload = {
+        "version": _LISTONE_VERSION,
+        "budget": state.budget,
+        "flags": state.flags,
+        "prices": state.prices,
+    }
     flags_file.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+
+
+def default_listone_state(budget: int = DEFAULT_BUDGET) -> ListoneState:
+    """Stato iniziale del listone: budget pieno, nessuna presa.
+
+    Args:
+        budget: budget totale di partenza (default 500).
+
+    Returns:
+        `ListoneState` vuoto.
+    """
+    return ListoneState(budget=budget)
+
+
+def listone_spent(state: ListoneState) -> int:
+    """Crediti spesi per la propria squadra (prese "noi" con prezzo)."""
+    return sum(price for name, price in state.prices.items() if state.flags.get(name) == "noi")
+
+
+def listone_remaining(state: ListoneState) -> int:
+    """Crediti residui: budget totale meno quanto speso."""
+    return state.budget - listone_spent(state)
+
+
+def _from_listone_payload(payload: dict) -> ListoneState:
+    """Payload v2 → stato, con validazione (scarti i valori non validi)."""
+    try:
+        budget = int(payload["budget"])
+    except (KeyError, TypeError, ValueError):
+        budget = DEFAULT_BUDGET
+    raw_flags = payload.get("flags")
+    flags = (
+        {str(name): str(owner) for name, owner in raw_flags.items() if owner in _VALID_FLAG_OWNERS}
+        if isinstance(raw_flags, dict)
+        else {}
+    )
+    raw_prices = payload.get("prices")
+    prices = (
+        {
+            str(name): int(price)
+            for name, price in raw_prices.items()
+            if isinstance(price, (int, float)) and not isinstance(price, bool) and int(price) >= 0
+        }
+        if isinstance(raw_prices, dict)
+        else {}
+    )
+    return ListoneState(budget=budget, flags=flags, prices=prices)
 
 
 def taken_urls(state: AuctionState) -> frozenset[str]:

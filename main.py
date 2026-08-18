@@ -4,10 +4,11 @@ Una sola pagina senza chrome: il listone completo dal file
 `resources/listone.xlsx` con le stesse regole di colore del file Excel
 (riga presa da noi = verde, presa da altri = rosso; titolarità e FMV
 colorati per valore). Le prese si segnano selezionando le righe e
-premendo i pulsanti "Preso da noi" / "Preso da altri": lo stato vive in
-`data/listone_flags.json` (`state.py`), i flag del file Excel restano la
-base. Solo rendering e input: la lettura del file è delegata al layer
-data (`fetch_listone`).
+premendo i pulsanti "Preso da noi" / "Preso da altri", indicando il
+prezzo pagato: il budget residuo è calcolato e mostrato in alto. Lo
+stato vive in `data/listone_flags.json` (`state.py`), i flag del file
+Excel restano la base. Solo rendering e input: la lettura del file è
+delegata al layer data (`fetch_listone`).
 """
 
 from collections.abc import Sequence
@@ -17,7 +18,8 @@ import pandas as pd
 import streamlit as st
 from pandas.io.formats.style import Styler
 
-from state import load_listone_flags, save_listone_flags
+from entities import ListoneState
+from state import listone_remaining, load_listone_flags, save_listone_flags
 from ui_common import get_listone, refresh_flag, role_codes
 from utility import LOGIC_VERSION
 
@@ -127,20 +129,38 @@ def _merged_flag(excel_noi: bool, excel_altri: bool, session: str | None) -> str
     return ""
 
 
-def _toggle_flags(flags: dict[str, str], names: Sequence[str], owner: str) -> None:
-    """Alterna le prese dei giocatori selezionati (noi/altri/libero)."""
+def _toggle_flags(
+    state: ListoneState,
+    names: Sequence[str],
+    owner: str,
+    price: int | None = None,
+) -> ListoneState:
+    """Alterna le prese dei giocatori selezionati (noi/altri/libero).
+
+    Segnando "noi" con un prezzo il prezzo viene registrato; liberando o
+    passando ad "altri" il prezzo viene rimosso.
+    """
+    flags = dict(state.flags)
+    prices = dict(state.prices)
     for name in names:
         if flags.get(name) == owner:
             flags[name] = ""
+            prices.pop(name, None)
         else:
             flags[name] = owner
+            if owner == "noi" and price:
+                prices[name] = price
+            else:
+                prices.pop(name, None)
+    return ListoneState(budget=state.budget, flags=flags, prices=prices)
 
 
-def _listone_frame(rows: tuple, flags: dict[str, str]) -> pd.DataFrame:
+def _listone_frame(rows: tuple, state: ListoneState) -> pd.DataFrame:
     """Frame del listone con tutte le informazioni del file Excel.
 
     La colonna "stato" (presa effettiva) non viene mostrata: alimenta solo
-    il colore di riga.
+    il colore di riga. La colonna "prezzo" mostra quanto pagato per i
+    presi da noi.
     """
     return pd.DataFrame(
         [
@@ -153,11 +173,19 @@ def _listone_frame(rows: tuple, flags: dict[str, str]) -> pd.DataFrame:
                 "rigorista": _flag(row.rigorista),
                 "punizioni": _flag(row.punizioni),
                 "angoli": _flag(row.angoli),
-                "stato": _merged_flag(row.preso_noi, row.preso_altri, flags.get(row.name)),
+                "prezzo": _price(row.name, state),
+                "stato": _merged_flag(row.preso_noi, row.preso_altri, state.flags.get(row.name)),
             }
             for row in rows
         ]
     )
+
+
+def _price(name: str, state: ListoneState) -> int | None:
+    """Prezzo pagato per il giocatore, se preso dalla propria squadra."""
+    if state.flags.get(name) != "noi":
+        return None
+    return state.prices.get(name)
 
 
 def _flag(value: bool) -> str:
@@ -183,9 +211,33 @@ def main() -> None:
         return
     if FLAGS_KEY not in st.session_state:
         st.session_state[FLAGS_KEY] = load_listone_flags()
-    flags = st.session_state[FLAGS_KEY]
-    frame = _listone_frame(rows, flags)
+    state = st.session_state[FLAGS_KEY]
+    frame = _listone_frame(rows, state)
     stati = tuple(frame.pop("stato"))
+
+    price_row = st.columns(2)
+    with price_row[0]:
+        if "price_mount" not in st.session_state:
+            st.session_state.price_mount = 0
+        price = st.number_input(
+            "Prezzo pagato (crediti)",
+            min_value=0,
+            value=0,
+            step=1,
+            key=f"price_paid_{st.session_state.price_mount}",
+        )
+    with price_row[1]:
+        budget = st.number_input(
+            "Budget totale (crediti)",
+            min_value=1,
+            value=state.budget,
+            step=5,
+            key="budget_total",
+        )
+    if budget != state.budget:
+        state = ListoneState(budget=budget, flags=dict(state.flags), prices=dict(state.prices))
+        st.session_state[FLAGS_KEY] = state
+        save_listone_flags(state)
 
     toolbar = st.columns([1, 1, 3], vertical_alignment="center")
     with toolbar[0]:
@@ -193,10 +245,13 @@ def main() -> None:
     with toolbar[1]:
         mark_altri = st.button("Preso da altri", key="mark_altri", width="stretch")
     with toolbar[2]:
-        st.caption(
-            "Seleziona una o più righe e premi il pulsante: "
-            "verde = preso da noi, rosso = preso da altri."
+        remaining = listone_remaining(state)
+        budget_text = (
+            f"Residuo: {remaining} / {state.budget} crediti"
+            if remaining >= 0
+            else f"Sei sopra budget di {-remaining} crediti"
         )
+        st.caption(f"{budget_text} — verde = preso da noi, rosso = preso da altri.")
 
     selection = st.dataframe(
         _style_frame(frame, stati),
@@ -209,6 +264,7 @@ def main() -> None:
             "rigorista": st.column_config.TextColumn("Rigorista"),
             "punizioni": st.column_config.TextColumn("Punizioni"),
             "angoli": st.column_config.TextColumn("Angoli"),
+            "prezzo": st.column_config.NumberColumn("Prezzo", format="%d"),
         },
         hide_index=True,
         width="stretch",
@@ -219,8 +275,10 @@ def main() -> None:
     names = [frame.iloc[index]["giocatore"] for index in selection]
 
     if mark_noi or mark_altri:
-        _toggle_flags(flags, names, "noi" if mark_noi else "altri")
-        save_listone_flags(flags)
+        state = _toggle_flags(state, names, "noi" if mark_noi else "altri", int(price))
+        st.session_state[FLAGS_KEY] = state
+        save_listone_flags(state)
+        st.session_state.price_mount += 1
         st.rerun()
 
 

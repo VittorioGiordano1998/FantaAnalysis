@@ -106,3 +106,27 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
   crash + unit di `_merged_flag`/`_toggle_flags`.
 - Verifica: `pytest` → 160/160; ruff puliti; render reale: 352 righe, 2
   bottoni, colonna "stato" nascosta, colori su righe simulate.
+
+## Follow-up 3 (prezzo pagato + budget residuo)
+
+- `data/listone_flags.json` passa al formato v2: `{"version": 2,
+  "budget": int, "flags": {...}, "prices": {...}}`; `load_listone_flags`
+  migra il v1 (mappa piatta) con budget di default e `save_listone_flags`
+  scrive l'envelope; nuova entità `ListoneState` in `entities.py`
+  (frozen: budget, flags, prices) e funzioni pure
+  `listone_spent`/`listone_remaining` in `state.py` (solo presi "noi"
+  con prezzo; i prezzi stantii di giocatori liberati non contano).
+- `main.py`: toolbar a due righe — prezzo pagato (number_input, si
+  azzera dopo il mark via re-mount della chiave) e budget totale
+  modificabile (default 500, persistito); caption "Residuo: X / Y
+  crediti" (rosso se sopra budget); colonna "Prezzo" nella tabella per
+  i presi da noi. `_toggle_flags` ora è pura su `ListoneState`: "noi"
+  con prezzo registra il prezzo, liberando o passando ad "altri" il
+  prezzo viene rimosso.
+- Test: `test_state.py` migrazione v1→v2, round-trip con budget/prezzi,
+  valori invalidi scartati, `listone_spent`/`listone_remaining` e prezzi
+  stantii; `test_smoke_pages.py` toggle con prezzo/rilascio/budget,
+  click senza crash.
+- Verifica: `pytest` → 165/165; ruff puliti; render reale: 2 bottoni, 2
+  number_input, caption "Residuo: 500 / 500 crediti", colonna prezzo,
+  352 righe, nessuna eccezione.

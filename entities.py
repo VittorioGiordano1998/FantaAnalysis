@@ -153,6 +153,19 @@ class ListoneRow:
 
 
 @dataclass(frozen=True)
+class ListoneState:
+    """Stato delle prese segnate dal listone: budget e prezzi pagati.
+
+    `flags` mappa nome giocatore → "noi" | "altri" | "" (libero esplicito);
+    `prices` mappa nome giocatore → crediti pagati (solo presi da noi).
+    """
+
+    budget: int
+    flags: dict[str, str] = dataclasses.field(default_factory=dict)
+    prices: dict[str, int] = dataclasses.field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class AuctionState:
     """Stato dell'asta (ADR-0004): budget totale, squadra propria, prese."""
 

@@ -5,7 +5,7 @@ Nessun test tocca la rete o il filesystem reale (tmp_path).
 
 import pytest
 
-from entities import Player, Quote, Role, RoleGroup, SeasonStats, TakenPick
+from entities import ListoneState, Player, Quote, Role, RoleGroup, SeasonStats, TakenPick
 from optimize import DEFAULT_BUDGET
 from state import (
     STATE_FILE,
@@ -13,6 +13,8 @@ from state import (
     default_state,
     export_state,
     import_state,
+    listone_remaining,
+    listone_spent,
     load_listone_flags,
     load_state,
     remove_taken,
@@ -129,25 +131,60 @@ def test_slots_remaining_ignores_other_teams_and_unknown():
 
 def test_listone_flags_round_trip(tmp_path):
     path = tmp_path / "listone_flags.json"
-    flags = {"Carnesecchi": "noi", "Dimarco": "altri", "Zappacosta": ""}
-    save_listone_flags(flags, path)
-    assert load_listone_flags(path) == flags
+    state = ListoneState(
+        budget=480,
+        flags={"Carnesecchi": "noi", "Dimarco": "altri", "Zappacosta": ""},
+        prices={"Carnesecchi": 35},
+    )
+    save_listone_flags(state, path)
+    assert load_listone_flags(path) == state
 
 
 def test_listone_flags_missing_file_is_empty(tmp_path):
-    assert load_listone_flags(tmp_path / "assente.json") == {}
+    assert load_listone_flags(tmp_path / "assente.json") == ListoneState(budget=DEFAULT_BUDGET)
 
 
 def test_listone_flags_invalid_values_are_dropped(tmp_path):
     path = tmp_path / "listone_flags.json"
     path.write_text(
-        '{"Carnesecchi": "noi", "Dimarco": "forse", "Maldini": "altri"}',
+        '{"version": 2, "budget": 500, "flags": {"Carnesecchi": "noi", "Dimarco": '
+        '"forse", "Maldini": "altri"}, "prices": {"Carnesecchi": 35, "Dimarco": "x"}}',
         encoding="utf-8",
     )
-    assert load_listone_flags(path) == {"Carnesecchi": "noi", "Maldini": "altri"}
+    loaded = load_listone_flags(path)
+    assert loaded.flags == {"Carnesecchi": "noi", "Maldini": "altri"}
+    assert loaded.prices == {"Carnesecchi": 35}
 
 
 def test_listone_flags_corrupt_file_is_empty(tmp_path):
     path = tmp_path / "listone_flags.json"
     path.write_text("non-json", encoding="utf-8")
-    assert load_listone_flags(path) == {}
+    assert load_listone_flags(path) == ListoneState(budget=DEFAULT_BUDGET)
+
+
+def test_listone_flags_v1_flat_format_is_migrated(tmp_path):
+    path = tmp_path / "listone_flags.json"
+    path.write_text('{"Carnesecchi": "noi", "Dimarco": "altri"}', encoding="utf-8")
+    assert load_listone_flags(path) == ListoneState(
+        budget=DEFAULT_BUDGET,
+        flags={"Carnesecchi": "noi", "Dimarco": "altri"},
+    )
+
+
+def test_listone_spent_and_remaining_budget():
+    state = ListoneState(
+        budget=500,
+        flags={"A": "noi", "B": "noi", "C": "altri"},
+        prices={"A": 35, "B": 40, "C": 90, "D": 10},
+    )
+    assert listone_spent(state) == 75
+    assert listone_remaining(state) == 425
+
+
+def test_listone_spent_ignores_stale_prices():
+    state = ListoneState(
+        budget=500,
+        flags={"A": "", "B": "noi"},
+        prices={"A": 30, "B": 20},
+    )
+    assert listone_spent(state) == 20

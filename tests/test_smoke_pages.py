@@ -119,7 +119,8 @@ def test_main_marks_taken_with_buttons(monkeypatch, tmp_path):
     at.button(key="mark_noi").click()
     at.run()
     assert not at.exception
-    assert at.session_state["listone_flags"] == {}
+    state = at.session_state["listone_flags"]
+    assert state.budget == 500 and state.flags == {} and state.prices == {}
 
 
 def test_merged_flag_prefers_session_then_excel():
@@ -133,14 +134,39 @@ def test_merged_flag_prefers_session_then_excel():
 
 
 def test_toggle_flags_cycles_owner_and_release():
+    from entities import ListoneState
     from main import _toggle_flags
 
-    flags: dict[str, str] = {}
-    _toggle_flags(flags, ["Dimarco"], "noi")
-    assert flags == {"Dimarco": "noi"}
-    _toggle_flags(flags, ["Dimarco"], "noi")
-    assert flags == {"Dimarco": ""}
-    _toggle_flags(flags, ["Dimarco"], "altri")
-    assert flags == {"Dimarco": "altri"}
-    _toggle_flags(flags, ["Dimarco", "Zappacosta"], "noi")
-    assert flags == {"Dimarco": "noi", "Zappacosta": "noi"}
+    state = ListoneState(budget=500)
+    state = _toggle_flags(state, ["Dimarco"], "noi", price=30)
+    assert state.flags == {"Dimarco": "noi"}
+    assert state.prices == {"Dimarco": 30}
+    state = _toggle_flags(state, ["Dimarco"], "noi")
+    assert state.flags == {"Dimarco": ""}
+    assert state.prices == {}
+    state = _toggle_flags(state, ["Dimarco"], "altri")
+    assert state.flags == {"Dimarco": "altri"}
+    assert state.prices == {}
+    state = _toggle_flags(state, ["Dimarco", "Zappacosta"], "noi", price=15)
+    assert state.flags == {"Dimarco": "noi", "Zappacosta": "noi"}
+    assert state.prices == {"Dimarco": 15, "Zappacosta": 15}
+    assert state.budget == 500
+
+
+def test_toggle_flags_altri_removes_price():
+    from entities import ListoneState
+    from main import _toggle_flags
+
+    state = ListoneState(budget=500, flags={"Dimarco": "noi"}, prices={"Dimarco": 30})
+    state = _toggle_flags(state, ["Dimarco"], "altri")
+    assert state.flags == {"Dimarco": "altri"}
+    assert state.prices == {}
+
+
+def test_toggle_flags_no_price_when_zero():
+    from entities import ListoneState
+    from main import _toggle_flags
+
+    state = _toggle_flags(ListoneState(budget=500), ["Dimarco"], "noi", price=0)
+    assert state.flags == {"Dimarco": "noi"}
+    assert state.prices == {}

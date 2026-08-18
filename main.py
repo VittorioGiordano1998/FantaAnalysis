@@ -129,6 +129,11 @@ def _merged_flag(excel_noi: bool, excel_altri: bool, session: str | None) -> str
     return ""
 
 
+def _needs_price(state: ListoneState, names: Sequence[str], price: int) -> bool:
+    """Vero se il mark "noi" richiede un prezzo (almeno un giocatore nuovo)."""
+    return price <= 0 and any(state.flags.get(name) != "noi" for name in names)
+
+
 def _toggle_flags(
     state: ListoneState,
     names: Sequence[str],
@@ -275,11 +280,16 @@ def main() -> None:
     names = [frame.iloc[index]["giocatore"] for index in selection]
 
     if mark_noi or mark_altri:
-        state = _toggle_flags(state, names, "noi" if mark_noi else "altri", int(price))
-        st.session_state[FLAGS_KEY] = state
-        save_listone_flags(state)
-        st.session_state.price_mount += 1
-        st.rerun()
+        if not names:
+            st.warning("Seleziona prima una o più righe dalla tabella.")
+        elif mark_noi and _needs_price(state, names, int(price)):
+            st.warning("Inserisci il prezzo pagato (crediti) prima di segnare 'Preso da noi'.")
+        else:
+            state = _toggle_flags(state, names, "noi" if mark_noi else "altri", int(price))
+            st.session_state[FLAGS_KEY] = state
+            save_listone_flags(state)
+            st.session_state.price_mount += 1
+            st.rerun()
 
 
 if __name__ == "__main__":

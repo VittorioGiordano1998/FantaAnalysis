@@ -63,7 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   è sopra budget). `data/listone_flags.json` passa al formato v2 (budget, flag,
   prezzi) con migrazione automatica dal v1; nuova entità `ListoneState` e funzioni
   `listone_spent`/`listone_remaining` in `state.py`; colonna "Prezzo" nella tabella
-  per i presi da noi.
+  per i presi da noi. Avvisi se si preme un pulsante senza selezione o se si segna
+  "Preso da noi" senza prezzo (il mark non viene applicato).
 
 ### Changed
 

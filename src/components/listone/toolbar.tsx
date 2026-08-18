@@ -3,6 +3,7 @@
 import { UserCheck, UserMinus, Users } from "lucide-react";
 
 import { GROUP_LABELS, type PlayerStatus, type RoleGroup } from "@/lib/types";
+import { Select } from "@/components/ui/select";
 
 export type GroupFilter = RoleGroup | "Tutti";
 
@@ -60,10 +61,9 @@ export function Toolbar({
           className="h-9 min-w-40 flex-1 rounded-md border border-input bg-background/40 px-3 text-sm placeholder:text-muted-foreground focus:border-ring focus:outline-none"
           data-testid="search-input"
         />
-        <select
+        <Select
           value={team}
           onChange={(event) => onTeamChange(event.target.value)}
-          className="h-9 rounded-md border border-input bg-background/40 px-2 text-sm focus:border-ring focus:outline-none"
           data-testid="team-select"
         >
           <option value="Tutte">Tutte le squadre</option>
@@ -72,11 +72,10 @@ export function Toolbar({
               {name}
             </option>
           ))}
-        </select>
-        <select
+        </Select>
+        <Select
           value={group}
           onChange={(event) => onGroupChange(event.target.value as GroupFilter)}
-          className="h-9 rounded-md border border-input bg-background/40 px-2 text-sm focus:border-ring focus:outline-none"
           data-testid="group-select"
         >
           <option value="Tutti">Tutti i ruoli</option>
@@ -85,7 +84,7 @@ export function Toolbar({
               {label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { FORMATION_TEAMS, formationImageUrl } from "@/lib/formazioni";
+import { Select } from "@/components/ui/select";
 
 /**
  * Selettore squadra + anteprima della probabile formazione (immagini in
@@ -15,10 +16,9 @@ export function FormationView() {
   return (
     <div className="glass flex flex-col gap-4 p-3 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <select
+        <Select
           value={team}
           onChange={(event) => setTeam(event.target.value)}
-          className="h-9 rounded-md border border-input bg-background/40 px-2 text-sm focus:border-ring focus:outline-none"
           data-testid="formation-team-select"
         >
           <option value="">Seleziona squadra</option>
@@ -27,7 +27,7 @@ export function FormationView() {
               {name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {team ? (

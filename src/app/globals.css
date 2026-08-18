@@ -56,6 +56,12 @@
   --scrollbar-thumb-hover: oklch(1 0 0 / 18%);
 }
 
+/* Opzioni dei menu a tendina coerenti con il tema scuro Sphynx */
+option {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
 * {
   border-color: var(--border);
   scrollbar-width: thin;

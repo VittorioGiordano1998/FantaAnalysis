@@ -71,7 +71,7 @@ export function CombinazioniView() {
       </div>
 
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3">
           {filtered.map((combo) => (
             <ComboCard key={combo.src} combo={combo} />
           ))}
@@ -104,7 +104,7 @@ function ComboCard({ combo }: { combo: GoalkeeperCombo }) {
           fill
           src={combo.src}
           alt={`Combinazione portieri ${comboLabel(combo)}`}
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+          sizes="100vw"
           className="object-contain"
           data-testid="combo-image"
         />

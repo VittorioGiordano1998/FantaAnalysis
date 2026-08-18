@@ -68,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scala di priorità sulle specialità (seguito M9-T1): il file `resources/listone.xlsx`
   aggiornato usa numeri (1, 2, 3 = primo/secondo/terzo tiratore o battitore) per
   rigorista, punizioni e angoli; le colonne mostrano la priorità numerica (la vecchia
-  spunta "✔" residua viene letta come priorità 3).
+  spunta "✔" residua viene letta come priorità 3); senza priorità la cella resta vuota
+  (nessuno 0).
 
 ### Changed
 

@@ -174,6 +174,16 @@ def test_needs_price_requires_price_for_new_noi():
     assert not _needs_price(taken, ["Dimarco"], 0)
 
 
+def test_priority_shows_only_numbers_or_empty():
+    from main import _priority
+
+    assert _priority(1) == "1"
+    assert _priority(2) == "2"
+    assert _priority(3) == "3"
+    assert _priority(None) == ""
+    assert _priority(0) == "0"
+
+
 def test_merged_flag_prefers_session_then_excel():
     from main import _merged_flag
 

@@ -140,8 +140,9 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
 - `entities.ListoneRow`: `rigorista`/`punizioni`/`angoli` passano da
   `bool` a `int | None`; `fetch_listone._optional_int` legge la priorità
   (la spunta "✔" residua, es. Miranda J. sugli angoli, vale 3).
-- `main.py`: le tre colonne mostrano il numero di priorità
-  (`NumberColumn`), niente più spunte.
+- `main.py`: le tre colonne mostrano la priorità come testo ("1"/"2"/"3",
+  vuoto se assente — niente 0) via `_priority` + `TextColumn`.
 - Verifica: parser su file reale — 351 giocatori, 58 rigoristi e 58
   battitori d'angolo con priorità 1-3, punizioni 1-2, Miranda J. → angoli
-  3; `pytest` → 167/167; ruff puliti; render reale senza eccezioni.
+  3; `pytest` → 168/168; ruff puliti; render reale senza eccezioni e
+  colonne con soli valori "", "1", "2", "3".

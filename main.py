@@ -1,9 +1,9 @@
-"""FantaOptimizer — schermata unica: copertura delle partite facili.
+"""FantaOptimizer — schermata unica: il listone completo.
 
-Si cerca un calciatore e l'app dice quali altri prendere per coprire le
-giornate con partita facile (M8-T8). Solo rendering e input: la logica di
-rete/cache è delegata ai moduli data, il calcolo a `logic`
-(entities/projection/utility/guide), lo stato a `state.py`.
+Una sola pagina con tutte le informazioni del file `Listone.xlsx`
+(ruoli Mantra, squadra, titolarità, FMV, rigorista, punizioni, angoli,
+presi), con ricerca e filtri. Solo rendering e input: la lettura del file
+è delegata al layer data (`fetch_listone`), lo stato a `state.py`.
 """
 
 import logging
@@ -15,32 +15,25 @@ import streamlit as st
 logger = logging.getLogger(__name__)
 
 try:
-    from entities import Player, RoleGroup
+    from entities import GROUP_LABELS, ROLE_GROUP, RoleGroup
     from export_excel import build_report
     from fetch_fixtures import get_calendario
     from fetch_quotazioni import get_quotazioni
     from fetch_stats import get_statistiche
-    from guide import GreedyPick, coverage_completions
     from optimize import optimize_squad
-    from projection import project, starter_share
-    from state import export_state, import_state, spent_budget
+    from state import export_state, import_state
     from ui_common import (
-        get_calendars,
         get_league,
+        get_listone,
         get_players,
         get_state,
         refresh_flag,
+        role_codes,
         set_state,
         slot_tuple,
         state_snapshot,
     )
-    from utility import (
-        LOGIC_VERSION,
-        opponent_outlook,
-        player_roles,
-        remaining_weeks,
-        team_strengths_from_players,
-    )
+    from utility import LOGIC_VERSION
 except ImportError as exc:
     logger.exception("Deploy incompleto: import falliti al boot (%s)", exc)
     st.error(
@@ -79,37 +72,6 @@ def _build_report_bytes(
     if squad.status != "Optimal":
         return b""
     return build_report(squad, players, league, taken_set)
-
-
-@st.cache_data(show_spinner=False)
-def _completion(
-    player_url: str,
-    taken: tuple[tuple[str, str, int | None], ...],
-    budget: int | None,
-    force: bool,
-) -> tuple[tuple[int, ...], tuple[tuple[GreedyPick, ...], ...], tuple[int, ...], Player]:
-    """Copertura per il giocatore cercato (chiave = giocatore + prese + budget).
-
-    Returns:
-        (giornate facili del cercato, alternative di presa, tutte le
-        giornate rimanenti, giocatore cercato).
-    """
-    players = get_players(force)
-    league = get_league(force)
-    calendars = get_calendars(force)
-    strengths = team_strengths_from_players(players)
-    taken_set = frozenset(url for url, _, _ in taken)
-    remaining = [player for player in players if player.url not in taken_set]
-    player = next(player for player in remaining if player.url == player_url)
-    own_weeks = tuple(
-        opp.matchweek
-        for opp in opponent_outlook(player, league, calendars, strengths)
-        if opp.easy is True
-    )
-    completions = coverage_completions(
-        player, remaining, league, calendars, strengths, budget=budget
-    )
-    return own_weeks, completions, remaining_weeks(league, calendars), player
 
 
 def _app_version() -> str:
@@ -195,143 +157,76 @@ def _render_report() -> None:
             )
 
 
-def _render_copertura_giocatore() -> None:
-    """Cerca un calciatore: chi prendere per coprire le partite facili."""
-    st.subheader("Copertura partite facili")
-    state = get_state()
-    players = get_players(refresh_flag())
-    if not players:
-        st.info("Listone non ancora scaricato: premi 'Aggiorna dati'.")
+def _render_listone() -> None:
+    """Il listone completo con ricerca, filtri squadra/gruppo e tutte le info."""
+    st.subheader("Listone")
+    rows = get_listone(refresh_flag())
+    if not rows:
+        st.info("Listone non ancora presente: copia il file Listone.xlsx in resources/.")
         return
-    taken = frozenset(pick.player_url for pick in state.taken)
-    by_label = {
-        f"{player.name} — {player.team_name}": player.url
-        for player in players
-        if player.url not in taken
-    }
-    if not by_label:
-        st.info("Tutti i giocatori del listone sono già presi.")
-        return
-    label = st.selectbox("Calciatore", list(by_label), key="cover_player")
-    state_budget = state.budget - spent_budget(state)
-    budget = st.number_input(
-        "Budget massimo per i suggerimenti (crediti)",
-        min_value=0,
-        value=max(0, state_budget),
-        step=10,
-        key="cover_budget",
-    )
-    with st.spinner("Calcolo copertura in corso..."):
-        taken_tuple = tuple((pick.player_url, pick.owner, pick.price) for pick in state.taken)
-        own_weeks, completions, weeks, player = _completion(
-            by_label[label], taken_tuple, budget, refresh_flag()
-        )
-    player_name = label.rsplit(" — ", 1)[0]
-    total = len(weeks)
-    st.caption(
-        f"Partite facili di {player_name}: "
-        + (", ".join(str(week) for week in own_weeks) if own_weeks else "nessuna")
-    )
-    league = get_league(refresh_flag())
-    share = starter_share(player, league)
-    st.caption(
-        f"QI di {player_name}: {player.quote.qi if player.quote.qi is not None else '—'} "
-        "crediti — Titolarietà: "
-        + (f"{share * 100:.0f}%" if share is not None else "non disponibile")
-    )
-    if not completions:
-        if len(set(own_weeks)) == total:
-            st.success(f"Con {player_name} copri già tutte le {total} giornate facili.")
-        else:
-            st.info(
-                "Nessun altro giocatore dello stesso ruolo aggiunge giornate "
-                f"facili (coperto {len(set(own_weeks))}/{total} con {budget} crediti)."
-            )
-        return
-    own_count = len(set(own_weeks))
-    main_picks = completions[0]
-    _render_alternative(
-        main_picks,
-        f"Alternativa principale — coperto {len(main_picks[-1].covered_weeks)}/{total}, "
-        f"{main_picks[-1].cost} crediti",
-        player_name,
-        own_count,
-        total,
-        weeks,
-        league,
-    )
-    show_all = st.checkbox(
-        "Mostra tutte le alternative",
-        value=False,
-        key="cover_all",
-    )
-    if show_all:
-        for index, picks in enumerate(completions[1:], start=2):
-            label_alt = (
-                f"Alternativa {index} — coperto {len(picks[-1].covered_weeks)}/{total}, "
-                f"{picks[-1].cost} crediti"
-            )
-            with st.expander(label_alt):
-                _render_alternative(
-                    picks,
-                    label_alt,
-                    player_name,
-                    own_count,
-                    total,
-                    weeks,
-                    league,
-                )
-    else:
-        st.caption(
-            "Le altre alternative sono nascoste: spunta 'Mostra tutte le alternative' per vederle."
-        )
 
+    search = st.text_input("Cerca giocatore", key="listone_search")
+    teams = sorted({row.team_name for row in rows})
+    team = st.selectbox("Squadra", ["Tutte", *teams], key="listone_team")
+    group_labels = {group: label for group, label in GROUP_LABELS.items()}
+    group = st.selectbox("Gruppo ruolo", ["Tutti", *group_labels.values()], key="listone_group")
 
-def _render_alternative(
-    picks: tuple[GreedyPick, ...],
-    title: str,
-    player_name: str,
-    own_count: int,
-    total: int,
-    weeks: tuple[int, ...],
-    league,
-) -> None:
-    """Tabella dei suggerimenti per una alternativa di copertura."""
-    final_covered = len(picks[-1].covered_weeks)
-    st.write(f"#### {title}")
-    st.caption(
-        f"Con {player_name} copri {own_count}/{total} giornate facili: "
-        f"prendendo questi arrivi a {final_covered}/{total}."
-    )
-    frame = pd.DataFrame(
-        [
-            {
-                "nome": pick.player.name,
-                "squadra": pick.player.team_name,
-                "ruolo": "/".join(role.value.upper() for role in player_roles(pick.player)),
-                "qi": pick.player.quote.qi,
-                "punti": round(project(pick.player, league).total_points, 1),
-                "aggiunte": ", ".join(str(week) for week in pick.added_weeks),
-            }
-            for pick in picks
+    filtered = rows
+    if search.strip():
+        needle = search.strip().lower()
+        filtered = [row for row in filtered if needle in row.name.lower()]
+    if team != "Tutte":
+        filtered = [row for row in filtered if row.team_name == team]
+    if group != "Tutti":
+        selected = next(role_group for role_group, label in group_labels.items() if label == group)
+        filtered = [
+            row for row in filtered if any(ROLE_GROUP[role] is selected for role in row.roles)
         ]
-    )
+
     st.dataframe(
-        frame,
+        _listone_frame(filtered),
         column_config={
-            "nome": st.column_config.TextColumn("Prendi"),
+            "giocatore": st.column_config.TextColumn("Giocatore"),
+            "ruoli": st.column_config.TextColumn("Ruolo"),
             "squadra": st.column_config.TextColumn("Squadra"),
-            "ruolo": st.column_config.TextColumn("Ruolo"),
-            "qi": st.column_config.NumberColumn("QI (pagalo max)"),
-            "punti": st.column_config.NumberColumn("Punti attesi", format="%.1f"),
-            "aggiunte": st.column_config.TextColumn("Giornate aggiunte"),
+            "titolarita": st.column_config.NumberColumn("Titolarità %", format="%.0f"),
+            "fmv": st.column_config.NumberColumn("FMV", format="%.2f"),
+            "rigorista": st.column_config.TextColumn("Rigorista"),
+            "punizioni": st.column_config.TextColumn("Punizioni"),
+            "angoli": st.column_config.TextColumn("Angoli"),
+            "preso_noi": st.column_config.TextColumn("Preso noi"),
+            "preso_altri": st.column_config.TextColumn("Preso altri"),
         },
         hide_index=True,
         width="stretch",
     )
-    uncovered = [week for week in weeks if week not in picks[-1].covered_weeks]
-    if uncovered:
-        st.caption("Giornate ancora scoperte: " + ", ".join(str(w) for w in uncovered))
+    st.caption(f"{len(filtered)} giocatori su {len(rows)}")
+
+
+def _listone_frame(rows: tuple) -> pd.DataFrame:
+    """Frame del listone con tutte le informazioni del file Excel."""
+    return pd.DataFrame(
+        [
+            {
+                "giocatore": row.name,
+                "ruoli": role_codes(row.roles),
+                "squadra": row.team_name,
+                "titolarita": row.titolarita,
+                "fmv": row.fmv,
+                "rigorista": _flag(row.rigorista),
+                "punizioni": _flag(row.punizioni),
+                "angoli": _flag(row.angoli),
+                "preso_noi": _flag(row.preso_noi),
+                "preso_altri": _flag(row.preso_altri),
+            }
+            for row in rows
+        ]
+    )
+
+
+def _flag(value: bool) -> str:
+    """Spunta del listone (vuoto se assente)."""
+    return "✔" if value else ""
 
 
 def main() -> None:
@@ -353,7 +248,7 @@ def main() -> None:
         st.session_state.aggiorna_dati = False
 
     _render_sidebar()
-    _render_copertura_giocatore()
+    _render_listone()
 
 
 if __name__ == "__main__":

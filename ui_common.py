@@ -10,8 +10,18 @@ from collections.abc import Sequence
 
 import streamlit as st
 
-from entities import GROUP_LABELS, ROLE_LABELS, AuctionState, Player, Role, RoleGroup, attach_stats
+from entities import (
+    GROUP_LABELS,
+    ROLE_LABELS,
+    AuctionState,
+    ListoneRow,
+    Player,
+    Role,
+    RoleGroup,
+    attach_stats,
+)
 from fetch_fixtures import read_league_context, read_remaining_calendar
+from fetch_listone import read_listone
 from fetch_quotazioni import read_players
 from fetch_stats import read_season_stats
 from projection import LeagueContext
@@ -20,6 +30,12 @@ from utility import TeamCalendar, formation_positions, missing_roles, player_rol
 
 STATE_KEY = "asta"
 REFRESH_KEY = "aggiorna_dati"
+
+
+@st.cache_data(show_spinner=False)
+def get_listone(force: bool) -> tuple[ListoneRow, ...]:
+    """Listone completo dall'Excel versionato, chiave = flag aggiornamento."""
+    return read_listone()
 
 
 @st.cache_data(show_spinner=False)

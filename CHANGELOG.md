@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Nuova pagina `pages/GuidaAsta.py` (M8-T9): guida asta per squadra in stile FantaLab —
   selettore squadra e rosa completa raggruppata per gruppo ruolo con QI/QA/FVM, media
   voto, presenze e stato all'asta (libero/preso).
+- Pagina unica "Listone" (M9-T1): `main.py` mostra il listone completo con tutte le
+  informazioni del file `resources/listone.xlsx` (ruoli Mantra, squadra, titolarità,
+  FMV, rigorista, punizioni, angoli, preso da noi/altri) con ricerca per nome e filtri
+  squadra/gruppo ruolo; nuovo modulo data `fetch_listone.py` (parsing Excel → entità
+  `ListoneRow`, righe vuote escluse).
 
 ### Changed
 

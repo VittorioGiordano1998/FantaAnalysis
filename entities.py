@@ -131,6 +131,28 @@ class TakenPick:
 
 
 @dataclass(frozen=True)
+class ListoneRow:
+    """Riga del listone completo (file Excel dell'utente, display-only).
+
+    Contiene tutte le informazioni del listone: ruoli Mantra nell'ordine
+    del file, squadra, titolarità (%), FMV, specialità (rigorista,
+    punizioni, angoli) e stato all'asta (preso dalla propria squadra / da
+    altri). Non partecipa alle proiezioni né all'ottimizzazione.
+    """
+
+    name: str
+    team_name: str
+    roles: tuple[Role, ...]
+    titolarita: float | None
+    fmv: float | None
+    rigorista: bool
+    punizioni: bool
+    angoli: bool
+    preso_noi: bool
+    preso_altri: bool
+
+
+@dataclass(frozen=True)
 class AuctionState:
     """Stato dell'asta (ADR-0004): budget totale, squadra propria, prese."""
 

@@ -10,9 +10,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 import fetch_fixtures as ff
+import fetch_listone as fl
 import fetch_quotazioni as fq
 import fetch_stats as fs
 import state as st8
@@ -33,6 +35,7 @@ def _empty_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(fs, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(ff, "CACHE_DIR", tmp_path)
     monkeypatch.setattr(st8, "STATE_FILE", tmp_path / "asta.json")
+    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
     empty = pd.DataFrame()
     monkeypatch.setattr(fq, "get_quotazioni", lambda force_refresh=False, **kw: empty)
     monkeypatch.setattr(fs, "get_statistiche", lambda force_refresh=False, **kw: empty)
@@ -43,3 +46,38 @@ def _empty_cache(monkeypatch, tmp_path):
 def test_page_boots_without_exception(script):
     at = AppTest.from_file(script).run()
     assert not at.exception, f"{script}: {at.exception}"
+
+
+def test_main_renders_listone_when_file_present(monkeypatch, tmp_path):
+    pd.DataFrame(
+        [
+            {
+                "Giocatore": "Dimarco",
+                "P": "",
+                "Ds": "",
+                "B": "",
+                "Dc": "",
+                "Dd": "",
+                "E": "✔",
+                "M": "",
+                "C": "",
+                "T": "",
+                "W": "✔",
+                "A": "",
+                "Pc": "",
+                "Squadra": "Inter",
+                "Titolarità": 75.0,
+                "FMV": 6.2,
+                "Rigorista": "",
+                "Punizioni": "",
+                "Angoli": "✔",
+                "Preso Noi": False,
+                "Preso Altri": False,
+            }
+        ]
+    ).to_excel(tmp_path / "listone.xlsx", index=False)
+    monkeypatch.setattr(fl, "LISTONE_PATH", tmp_path / "listone.xlsx")
+    st.cache_data.clear()
+    at = AppTest.from_file(ROOT / "main.py").run()
+    assert not at.exception
+    assert len(at.dataframe) == 1

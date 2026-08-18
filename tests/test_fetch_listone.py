@@ -83,7 +83,7 @@ def test_read_listone_maps_all_columns(tmp_path):
     wing = rows[1]
     assert wing.roles == (Role.E, Role.W)
     assert wing.titolarita is None and wing.fmv is None
-    assert wing.rigorista == 1 and wing.punizioni is None and wing.angoli == 1
+    assert wing.rigorista == 1 and wing.punizioni is None and wing.angoli == 3
     assert wing.preso_noi and wing.preso_altri
 
 

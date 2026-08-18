@@ -97,13 +97,13 @@ def _optional_float(row: pd.Series, column: str) -> float | None:
 def _optional_int(row: pd.Series, column: str) -> int | None:
     """Priorità numerica opzionale (1, 2, 3, ...; None se vuota).
 
-    La vecchia spunta "✔" del listone viene trattata come priorità 1.
+    La vecchia spunta "✔" del listone viene trattata come priorità 3.
     """
     value = row.get(column)
     if pd.isna(value):
         return None
     if str(value).strip() == _CHECK_COLUMN:
-        return 1
+        return 3
     return int(value)
 
 

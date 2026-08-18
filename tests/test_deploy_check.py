@@ -21,3 +21,12 @@ def test_deploy_ok_fails_on_mismatch(tmp_path):
 
 def test_deploy_ok_fails_without_file(tmp_path):
     assert not deploy_ok(tmp_path / "version.txt")
+
+
+def test_deploy_ok_fails_on_old_listone_parser(tmp_path, monkeypatch):
+    version_file = tmp_path / "version.txt"
+    version_file.write_text(LOGIC_VERSION + "\n", encoding="utf-8")
+    import fetch_listone
+
+    monkeypatch.setattr(fetch_listone, "LISTONE_PARSER_VERSION", 1)
+    assert not deploy_ok(version_file)

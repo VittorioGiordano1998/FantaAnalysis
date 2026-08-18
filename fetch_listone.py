@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 LISTONE_PATH = Path("resources") / "listone.xlsx"
 
+# Versione dello schema di parsing: rileva i deploy misti (fetch_listone.py
+# vecchio servito con main.py nuovo → colonne booleane invece delle priorità).
+LISTONE_PARSER_VERSION = 2
+
 _ROLE_COLUMNS = (
     ("P", Role.POR),
     ("Ds", Role.DS),

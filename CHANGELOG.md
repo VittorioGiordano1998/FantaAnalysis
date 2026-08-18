@@ -70,6 +70,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rigorista, punizioni e angoli; le colonne mostrano la priorità numerica (la vecchia
   spunta "✔" residua viene letta come priorità 3); senza priorità la cella resta vuota
   (nessuno 0).
+- Fix deploy misto (seguito M9-T1): Streamlit Cloud poteva servire `main.py` nuovo con
+  `fetch_listone.py` vecchio (colonne "True"/"False" al posto di 1/2/3). `_priority`
+  ora è tollerante ai bool (True → 1, False → vuoto) e il check deploy verifica anche
+  `fetch_listone.LISTONE_PARSER_VERSION` (schema atteso 2); `LOGIC_VERSION` e
+  `version.txt` allineati a 0.14.0.
 
 ### Changed
 

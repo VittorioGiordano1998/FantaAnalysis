@@ -142,7 +142,14 @@ punizioni, angoli né il FMV decimale: il file Excel (generato da FantaLab,
   (la spunta "✔" residua, es. Miranda J. sugli angoli, vale 3).
 - `main.py`: le tre colonne mostrano la priorità come testo ("1"/"2"/"3",
   vuoto se assente — niente 0) via `_priority` + `TextColumn`.
+- Fix deploy misto: l'utente vedeva "True"/"False" al posto delle priorità
+  — Streamlit Cloud stava servendo `main.py` nuovo con `fetch_listone.py`
+  vecchio (parsing a spunte booleane). `_priority` è ora tollerante ai
+  bool (True → "1", False → "") e `deploy_ok` verifica anche
+  `fetch_listone.LISTONE_PARSER_VERSION` == 2, così il deploy misto viene
+  rilevato e mostrato come errore; `LOGIC_VERSION` e `version.txt`
+  allineati a 0.14.0.
 - Verifica: parser su file reale — 351 giocatori, 58 rigoristi e 58
   battitori d'angolo con priorità 1-3, punizioni 1-2, Miranda J. → angoli
-  3; `pytest` → 168/168; ruff puliti; render reale senza eccezioni e
+  3; `pytest` → 169/169; ruff puliti; render reale senza eccezioni e
   colonne con soli valori "", "1", "2", "3".

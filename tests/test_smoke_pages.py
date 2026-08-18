@@ -182,6 +182,8 @@ def test_priority_shows_only_numbers_or_empty():
     assert _priority(3) == "3"
     assert _priority(None) == ""
     assert _priority(0) == "0"
+    assert _priority(True) == "1"
+    assert _priority(False) == ""
 
 
 def test_merged_flag_prefers_session_then_excel():

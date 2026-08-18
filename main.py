@@ -18,6 +18,7 @@ import pandas as pd
 import streamlit as st
 from pandas.io.formats.style import Styler
 
+import fetch_listone
 from entities import ListoneState
 from state import listone_remaining, load_listone_flags, save_listone_flags
 from ui_common import get_listone, refresh_flag, role_codes
@@ -56,6 +57,8 @@ FMV_LOW_COLOR = "#E06666"
 
 FLAGS_KEY = "listone_flags"
 
+_EXPECTED_LISTONE_PARSER_VERSION = 2
+
 
 def _app_version() -> str:
     """Versione deployata (da version.txt), per la diagnosi."""
@@ -70,12 +73,16 @@ def deploy_ok(version_file: Path = Path("version.txt")) -> bool:
 
     Streamlit Cloud può servire file di commit diversi (main.py nuovo con
     `utility.py` vecchia): il confronto rende il deploy misto visibile
-    subito invece di produrre numeri sbagliati in silenzio.
+    subito invece di produrre numeri sbagliati in silenzio. Verifica anche
+    che il parser del listone abbia lo schema atteso (priorità numeriche:
+    un parser vecchio produce "True"/"False" al posto di 1/2/3).
     """
     try:
-        return version_file.read_text(encoding="utf-8").strip() == LOGIC_VERSION
+        version_ok = version_file.read_text(encoding="utf-8").strip() == LOGIC_VERSION
     except OSError:
         return False
+    listone_ok = fetch_listone.LISTONE_PARSER_VERSION == _EXPECTED_LISTONE_PARSER_VERSION
+    return version_ok and listone_ok
 
 
 def _row_style(row: pd.Series, stati: Sequence[str]) -> list[str]:
@@ -194,8 +201,16 @@ def _price(name: str, state: ListoneState) -> int | None:
 
 
 def _priority(value: int | None) -> str:
-    """Priorità della specialità: solo 1/2/3, vuoto se assente."""
-    return str(value) if value is not None else ""
+    """Priorità della specialità: solo 1/2/3, vuoto se assente.
+
+    Tollerante ai bool del vecchio parser (deploy misto): True = 1,
+    False = vuoto, invece di "True"/"False".
+    """
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "1" if value else ""
+    return str(value)
 
 
 def main() -> None:

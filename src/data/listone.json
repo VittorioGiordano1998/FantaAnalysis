@@ -21,8 +21,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 1.0,
       "fmv": 4.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Vismara",
+      "teamName": "Atalanta",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -51,7 +65,7 @@
         "dc"
       ],
       "titolarita": 95.0,
-      "fmv": 5.44,
+      "fmv": 6.44,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -66,7 +80,7 @@
         "dd"
       ],
       "titolarita": 75.0,
-      "fmv": 6.25,
+      "fmv": 6.23,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -142,6 +156,21 @@
       ],
       "titolarita": 50.0,
       "fmv": 5.94,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kossounou",
+      "teamName": "Atalanta",
+      "roles": [
+        "dc",
+        "dd"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.1,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -238,7 +267,22 @@
       "presoAltri": false
     },
     {
-      "name": "De Ketalaere",
+      "name": "Sulemana I.",
+      "teamName": "Atalanta",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.77,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "De Ketelaere",
       "teamName": "Atalanta",
       "roles": [
         "a"
@@ -294,6 +338,20 @@
       "presoAltri": false
     },
     {
+      "name": "Sulemana K.",
+      "teamName": "Atalanta",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.24,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Skorupski",
       "teamName": "Bologna",
       "roles": [
@@ -314,7 +372,21 @@
         "por"
       ],
       "titolarita": 25.0,
-      "fmv": null,
+      "fmv": 5.63,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Happonen",
+      "teamName": "Bologna",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -358,7 +430,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": 5.85,
+      "fmv": 5.86,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -374,6 +446,80 @@
       ],
       "titolarita": 50.0,
       "fmv": 5.9,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Alhassane",
+      "teamName": "Bologna",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Holm",
+      "teamName": "Bologna",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.43,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Casale",
+      "teamName": "Bologna",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.65,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "De Silvestri",
+      "teamName": "Bologna",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.95,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Helland",
+      "teamName": "Bologna",
+      "roles": [
+        "dc",
+        "dd"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.33,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -444,7 +590,8 @@
       "name": "Cambiaghi",
       "teamName": "Bologna",
       "roles": [
-        "w"
+        "w",
+        "a"
       ],
       "titolarita": 50.0,
       "fmv": 6.42,
@@ -499,6 +646,36 @@
       "presoAltri": false
     },
     {
+      "name": "Amondarain",
+      "teamName": "Bologna",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "El Azzouzi O.",
+      "teamName": "Bologna",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Dovbyk",
       "teamName": "Bologna",
       "roles": [
@@ -529,7 +706,9 @@
     {
       "name": "Caprile",
       "teamName": "Cagliari",
-      "roles": [],
+      "roles": [
+        "por"
+      ],
       "titolarita": 95.0,
       "fmv": 4.87,
       "rigorista": null,
@@ -539,11 +718,27 @@
       "presoAltri": false
     },
     {
+      "name": "Radunovic",
+      "teamName": "Cagliari",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Sherri",
       "teamName": "Cagliari",
-      "roles": [],
-      "titolarita": 25.0,
-      "fmv": null,
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -581,7 +776,7 @@
       "presoAltri": false
     },
     {
-      "name": "Rodriguez Jr.",
+      "name": "Rodriguez Ju.",
       "teamName": "Cagliari",
       "roles": [
         "ds",
@@ -627,6 +822,50 @@
       "presoAltri": false
     },
     {
+      "name": "Idrissi R.",
+      "teamName": "Cagliari",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.08,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kofler",
+      "teamName": "Cagliari",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Aurelio",
+      "teamName": "Cagliari",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Adopo",
       "teamName": "Cagliari",
       "roles": [
@@ -664,7 +903,7 @@
         "c"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -679,7 +918,7 @@
         "c"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -716,13 +955,43 @@
       "presoAltri": false
     },
     {
+      "name": "Liteta",
+      "teamName": "Cagliari",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.75,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Prati",
+      "teamName": "Cagliari",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.88,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Kevin Carlos",
       "teamName": "Cagliari",
       "roles": [
         "pc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -773,6 +1042,62 @@
       "presoAltri": false
     },
     {
+      "name": "Mutandwa",
+      "teamName": "Cagliari",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Trepy",
+      "teamName": "Cagliari",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.88,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Albarracin",
+      "teamName": "Cagliari",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Esposito Se.",
+      "teamName": "Cagliari",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.87,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Butez",
       "teamName": "Como",
       "roles": [
@@ -792,8 +1117,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
-      "fmv": null,
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Vigorito",
+      "teamName": "Como",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -808,7 +1147,7 @@
         "dd"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -823,21 +1162,7 @@
         "e"
       ],
       "titolarita": 75.0,
-      "fmv": null,
-      "rigorista": null,
-      "punizioni": null,
-      "angoli": null,
-      "presoNoi": false,
-      "presoAltri": false
-    },
-    {
-      "name": "Kempf",
-      "teamName": "Como",
-      "roles": [
-        "dc"
-      ],
-      "titolarita": 50.0,
-      "fmv": 6.52,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -851,7 +1176,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": 5.14,
+      "fmv": 6.14,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -866,7 +1191,21 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kempf",
+      "teamName": "Como",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 50.0,
+      "fmv": 6.52,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -904,6 +1243,35 @@
       "presoAltri": false
     },
     {
+      "name": "Van Der Brempt",
+      "teamName": "Como",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.96,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Goldaniga",
+      "teamName": "Como",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Da Cunha",
       "teamName": "Como",
       "roles": [
@@ -934,21 +1302,6 @@
       "presoAltri": false
     },
     {
-      "name": "Perrone",
-      "teamName": "Como",
-      "roles": [
-        "m",
-        "c"
-      ],
-      "titolarita": 75.0,
-      "fmv": 6.47,
-      "rigorista": null,
-      "punizioni": null,
-      "angoli": null,
-      "presoNoi": false,
-      "presoAltri": false
-    },
-    {
       "name": "Baturina",
       "teamName": "Como",
       "roles": [
@@ -963,14 +1316,14 @@
       "presoAltri": false
     },
     {
-      "name": "Addai",
+      "name": "Perrone",
       "teamName": "Como",
       "roles": [
-        "w",
-        "a"
+        "m",
+        "c"
       ],
-      "titolarita": 50.0,
-      "fmv": 6.54,
+      "titolarita": 75.0,
+      "fmv": 6.47,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -999,7 +1352,7 @@
         "t"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1014,7 +1367,7 @@
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1022,7 +1375,7 @@
       "presoAltri": false
     },
     {
-      "name": "Rodriguez Je,",
+      "name": "Rodriguez Je.",
       "teamName": "Como",
       "roles": [
         "w",
@@ -1030,6 +1383,50 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.66,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Addai",
+      "teamName": "Como",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.54,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Fadera",
+      "teamName": "Como",
+      "roles": [
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.11,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lahdo",
+      "teamName": "Como",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1066,6 +1463,49 @@
       "presoAltri": false
     },
     {
+      "name": "Azon",
+      "teamName": "Como",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kuhn",
+      "teamName": "Como",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.25,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Morata",
+      "teamName": "Como",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.21,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "De Gea",
       "teamName": "Fiorentina",
       "roles": [
@@ -1085,8 +1525,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 1.0,
       "fmv": 6.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lezzerini",
+      "teamName": "Fiorentina",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1100,7 +1554,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1131,7 +1585,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1146,7 +1600,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1198,6 +1652,36 @@
       "presoAltri": false
     },
     {
+      "name": "Ranieri L.",
+      "teamName": "Fiorentina",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.79,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Parisi",
+      "teamName": "Fiorentina",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.98,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Atta",
       "teamName": "Fiorentina",
       "roles": [
@@ -1235,7 +1719,7 @@
         "w"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 3,
       "punizioni": 1,
       "angoli": 2,
@@ -1243,7 +1727,7 @@
       "presoAltri": false
     },
     {
-      "name": "Gudmundsson",
+      "name": "Gudmundsson A.",
       "teamName": "Fiorentina",
       "roles": [
         "t",
@@ -1251,7 +1735,7 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.35,
-      "rigorista": 2,
+      "rigorista": null,
       "punizioni": null,
       "angoli": null,
       "presoNoi": false,
@@ -1293,7 +1777,37 @@
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Brescianini",
+      "teamName": "Fiorentina",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.3,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Fabbian",
+      "teamName": "Fiorentina",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.03,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1321,21 +1835,7 @@
         "pc"
       ],
       "titolarita": 50.0,
-      "fmv": 6.24,
-      "rigorista": null,
-      "punizioni": null,
-      "angoli": null,
-      "presoNoi": false,
-      "presoAltri": false
-    },
-    {
-      "name": "Palmisani",
-      "teamName": "Frosinone",
-      "roles": [
-        "por"
-      ],
-      "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 6.65,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1349,7 +1849,49 @@
         "por"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Palmisani",
+      "teamName": "Frosinone",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lolic",
+      "teamName": "Frosinone",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Pisseri",
+      "teamName": "Frosinone",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1363,7 +1905,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1378,7 +1920,7 @@
         "e"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1390,11 +1932,10 @@
       "teamName": "Frosinone",
       "roles": [
         "ds",
-        "dc",
-        "pc"
+        "dc"
       ],
       "titolarita": 50.0,
-      "fmv": 6.65,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1408,7 +1949,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1422,7 +1963,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1437,7 +1978,93 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Oyono J.",
+      "teamName": "Frosinone",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Amey",
+      "teamName": "Frosinone",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Cittadini",
+      "teamName": "Frosinone",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Corrado",
+      "teamName": "Frosinone",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gelli J.",
+      "teamName": "Frosinone",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Omar Fayed",
+      "teamName": "Frosinone",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1452,7 +2079,7 @@
         "c"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": 1,
       "angoli": 1,
@@ -1467,7 +2094,7 @@
         "w"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1475,14 +2102,14 @@
       "presoAltri": false
     },
     {
-      "name": "El  Azzouzi A.",
+      "name": "El Azzouzi A.",
       "teamName": "Frosinone",
       "roles": [
         "m",
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1497,7 +2124,7 @@
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1519,6 +2146,108 @@
       "presoAltri": false
     },
     {
+      "name": "Gelli F.",
+      "teamName": "Frosinone",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Hasa",
+      "teamName": "Frosinone",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Koutsoupias",
+      "teamName": "Frosinone",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Masini",
+      "teamName": "Frosinone",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.91,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Cichella",
+      "teamName": "Frosinone",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Fini",
+      "teamName": "Frosinone",
+      "roles": [
+        "w"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kone B.",
+      "teamName": "Frosinone",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Ghedjemis",
       "teamName": "Frosinone",
       "roles": [
@@ -1526,7 +2255,7 @@
         "a"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 2,
       "punizioni": 2,
       "angoli": 3,
@@ -1540,7 +2269,7 @@
         "pc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1555,7 +2284,7 @@
         "a"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 3,
       "punizioni": null,
       "angoli": 2,
@@ -1582,8 +2311,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 1.0,
       "fmv": 3.75,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Stolz",
+      "teamName": "Genoa",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1656,10 +2399,85 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": 1,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Martin",
+      "teamName": "Genoa",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.11,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Otoa",
+      "teamName": "Genoa",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.35,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Puczka",
+      "teamName": "Genoa",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Sabelli",
+      "teamName": "Genoa",
+      "roles": [
+        "ds",
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.66,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Matturro",
+      "teamName": "Genoa",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
       "presoNoi": false,
       "presoAltri": false
     },
@@ -1686,7 +2504,7 @@
         "c"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1723,9 +2541,10 @@
       "presoAltri": false
     },
     {
-      "name": "Ellertson",
+      "name": "Ellertsson",
       "teamName": "Genoa",
       "roles": [
+        "e",
         "c"
       ],
       "titolarita": 50.0,
@@ -1744,7 +2563,7 @@
         "w"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1759,7 +2578,36 @@
         "w"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Messias",
+      "teamName": "Genoa",
+      "roles": [
+        "t",
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.68,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Venturino",
+      "teamName": "Genoa",
+      "roles": [
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.86,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1795,6 +2643,20 @@
       "presoAltri": false
     },
     {
+      "name": "Havel",
+      "teamName": "Genoa",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Martinez Jo.",
       "teamName": "Inter",
       "roles": [
@@ -1816,6 +2678,20 @@
       ],
       "titolarita": 50.0,
       "fmv": 5.35,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Di Gennaro",
+      "teamName": "Inter",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1854,7 +2730,7 @@
       "name": "Dimarco",
       "teamName": "Inter",
       "roles": [
-        "dd",
+        "e",
         "w"
       ],
       "titolarita": 95.0,
@@ -1866,7 +2742,7 @@
       "presoAltri": false
     },
     {
-      "name": "Bissek",
+      "name": "Bisseck",
       "teamName": "Inter",
       "roles": [
         "dc"
@@ -1902,7 +2778,7 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1916,7 +2792,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -1985,6 +2861,7 @@
       "name": "Diouf",
       "teamName": "Inter",
       "roles": [
+        "e",
         "c"
       ],
       "titolarita": 50.0,
@@ -1999,6 +2876,7 @@
       "name": "Luis Henrique",
       "teamName": "Inter",
       "roles": [
+        "e",
         "w"
       ],
       "titolarita": 50.0,
@@ -2031,6 +2909,21 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.27,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Stankovic A.",
+      "teamName": "Inter",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2099,7 +2992,21 @@
       "roles": [
         "por"
       ],
-      "titolarita": 75.0,
+      "titolarita": 95.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Di Gregorio",
+      "teamName": "Juventus",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 25.0,
       "fmv": 5.33,
       "rigorista": null,
       "punizioni": null,
@@ -2115,6 +3022,20 @@
       ],
       "titolarita": 25.0,
       "fmv": 5.11,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Pinsoglio",
+      "teamName": "Juventus",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2226,6 +3147,36 @@
       "presoAltri": false
     },
     {
+      "name": "Cabal",
+      "teamName": "Juventus",
+      "roles": [
+        "ds",
+        "b",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.55,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Rugani",
+      "teamName": "Juventus",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.57,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Locatelli",
       "teamName": "Juventus",
       "roles": [
@@ -2262,7 +3213,7 @@
         "w"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2284,7 +3235,7 @@
       "presoAltri": false
     },
     {
-      "name": "Coinceicao",
+      "name": "Conceicao",
       "teamName": "Juventus",
       "roles": [
         "w",
@@ -2299,13 +3250,71 @@
       "presoAltri": false
     },
     {
+      "name": "Douglas Luiz",
+      "teamName": "Juventus",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Koopmeiners",
+      "teamName": "Juventus",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.55,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Miretti",
+      "teamName": "Juventus",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.2,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Zhegrova",
+      "teamName": "Juventus",
+      "roles": [
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.92,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Kolo Muani",
       "teamName": "Juventus",
       "roles": [
         "pc"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": null,
       "angoli": null,
@@ -2356,13 +3365,41 @@
       "presoAltri": false
     },
     {
+      "name": "Ekhator",
+      "teamName": "Juventus",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.26,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Milik",
+      "teamName": "Juventus",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Mandas",
       "teamName": "Lazio",
       "roles": [
         "por"
       ],
-      "titolarita": 75.0,
-      "fmv": null,
+      "titolarita": 50.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2375,8 +3412,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 50.0,
       "fmv": 5.17,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Renzetti",
+      "teamName": "Lazio",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2390,7 +3441,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2421,7 +3472,7 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2480,6 +3531,51 @@
       ],
       "titolarita": 25.0,
       "fmv": 5.72,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lazzari",
+      "teamName": "Lazio",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.73,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Patric",
+      "teamName": "Lazio",
+      "roles": [
+        "dc",
+        "dd"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.75,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Pellegrini Lu.",
+      "teamName": "Lazio",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.81,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2607,6 +3703,36 @@
       "presoAltri": false
     },
     {
+      "name": "Belahyane",
+      "teamName": "Lazio",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.82,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Przyborek",
+      "teamName": "Lazio",
+      "roles": [
+        "t",
+        "w"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Dia",
       "teamName": "Lazio",
       "roles": [
@@ -2635,13 +3761,41 @@
       "presoAltri": false
     },
     {
+      "name": "Ratkov",
+      "teamName": "Lazio",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.64,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Falcone",
       "teamName": "Lecce",
       "roles": [
         "por"
       ],
       "titolarita": 95.0,
-      "fmv": 6.41,
+      "fmv": 5.23,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Bleve",
+      "teamName": "Lecce",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2654,8 +3808,8 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
-      "fmv": null,
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2714,6 +3868,49 @@
       ],
       "titolarita": 75.0,
       "fmv": 5.76,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gaspar K.",
+      "teamName": "Lecce",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.64,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ndaba",
+      "teamName": "Lecce",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Jean",
+      "teamName": "Lecce",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.7,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2783,11 +3980,71 @@
       "name": "Maleh",
       "teamName": "Lecce",
       "roles": [
-        "c",
-        "t"
+        "m",
+        "c"
       ],
       "titolarita": 50.0,
       "fmv": 5.71,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Kaba",
+      "teamName": "Lecce",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.72,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ngom",
+      "teamName": "Lecce",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.65,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Fofana Sa.",
+      "teamName": "Lecce",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gorter",
+      "teamName": "Lecce",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.5,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -2801,7 +4058,7 @@
         "pc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": null,
       "angoli": null,
@@ -2857,7 +4114,7 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 1.0,
       "fmv": 6.0,
       "rigorista": null,
       "punizioni": null,
@@ -2866,7 +4123,21 @@
       "presoAltri": false
     },
     {
-      "name": "Bertesaghi",
+      "name": "Torriani",
+      "teamName": "Milan",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Bartesaghi",
       "teamName": "Milan",
       "roles": [
         "ds",
@@ -2876,7 +4147,7 @@
       "fmv": 6.05,
       "rigorista": null,
       "punizioni": null,
-      "angoli": 3,
+      "angoli": null,
       "presoNoi": false,
       "presoAltri": false
     },
@@ -2952,7 +4223,7 @@
       "presoAltri": false
     },
     {
-      "name": "Estupinian",
+      "name": "Estupinan",
       "teamName": "Milan",
       "roles": [
         "ds",
@@ -2960,6 +4231,21 @@
       ],
       "titolarita": 25.0,
       "fmv": 5.68,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Diawara S.",
+      "teamName": "Milan",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3027,7 +4313,7 @@
       "presoAltri": false
     },
     {
-      "name": "Chukweze",
+      "name": "Chukwueze",
       "teamName": "Milan",
       "roles": [
         "w"
@@ -3058,9 +4344,25 @@
     {
       "name": "Jashari",
       "teamName": "Milan",
-      "roles": [],
+      "roles": [
+        "c"
+      ],
       "titolarita": 50.0,
       "fmv": 5.79,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Moreira",
+      "teamName": "Milan",
+      "roles": [
+        "w"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3076,6 +4378,21 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.16,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Cissè A.",
+      "teamName": "Milan",
+      "roles": [
+        "t",
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3119,7 +4436,7 @@
         "pc"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": null,
       "angoli": null,
@@ -3155,13 +4472,41 @@
       "presoAltri": false
     },
     {
+      "name": "Camarda",
+      "teamName": "Milan",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.64,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gimenez",
+      "teamName": "Milan",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Thiam",
       "teamName": "Monza",
       "roles": [
         "por"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3175,7 +4520,21 @@
         "por"
       ],
       "titolarita": 25.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Strajnar",
+      "teamName": "Monza",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3191,7 +4550,7 @@
         "e"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3221,7 +4580,7 @@
         "e"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3229,14 +4588,14 @@
       "presoAltri": false
     },
     {
-      "name": "Carboni",
+      "name": "Carboni A.",
       "teamName": "Monza",
       "roles": [
         "ds",
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3250,7 +4609,50 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Bakoune",
+      "teamName": "Monza",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lucchesi",
+      "teamName": "Monza",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Antov",
+      "teamName": "Monza",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3265,7 +4667,7 @@
         "c"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": 2,
       "angoli": 1,
@@ -3280,7 +4682,7 @@
         "w"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": 3,
@@ -3309,7 +4711,7 @@
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3323,7 +4725,7 @@
         "t"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": 1,
       "angoli": 2,
@@ -3337,8 +4739,8 @@
         "t",
         "w"
       ],
-      "titolarita": 50.0,
-      "fmv": null,
+      "titolarita": 25.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3352,22 +4754,8 @@
         "a"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
-      "punizioni": null,
-      "angoli": null,
-      "presoNoi": false,
-      "presoAltri": false
-    },
-    {
-      "name": "Petagna",
-      "teamName": "Monza",
-      "roles": [
-        "pc"
-      ],
-      "titolarita": 50.0,
-      "fmv": null,
-      "rigorista": 3,
       "punizioni": null,
       "angoli": null,
       "presoNoi": false,
@@ -3388,12 +4776,54 @@
       "presoAltri": false
     },
     {
+      "name": "Petagna",
+      "teamName": "Monza",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
+      "rigorista": 3,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Varela G.",
+      "teamName": "Monza",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Robinson J.",
+      "teamName": "Monza",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Meret",
       "teamName": "Napoli",
       "roles": [
         "por"
       ],
-      "titolarita": 75.0,
+      "titolarita": 50.0,
       "fmv": 5.18,
       "rigorista": null,
       "punizioni": null,
@@ -3402,13 +4832,27 @@
       "presoAltri": false
     },
     {
-      "name": "Milinkovic-Savic",
+      "name": "Milinkovic-Savic V.",
       "teamName": "Napoli",
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 50.0,
       "fmv": 5.64,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Contini",
+      "teamName": "Napoli",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3451,7 +4895,7 @@
         "dc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3502,6 +4946,22 @@
       "presoAltri": false
     },
     {
+      "name": "Favasuli",
+      "teamName": "Napoli",
+      "roles": [
+        "ds",
+        "dd",
+        "e"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Olivera",
       "teamName": "Napoli",
       "roles": [
@@ -3511,6 +4971,36 @@
       ],
       "titolarita": 50.0,
       "fmv": 5.68,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Marianucci",
+      "teamName": "Napoli",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.73,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Mazzocchi",
+      "teamName": "Napoli",
+      "roles": [
+        "ds",
+        "dd",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.94,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3605,6 +5095,36 @@
       "presoAltri": false
     },
     {
+      "name": "Folorunsho",
+      "teamName": "Napoli",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.21,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gilmour",
+      "teamName": "Napoli",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.27,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Hojlund",
       "teamName": "Napoli",
       "roles": [
@@ -3663,6 +5183,34 @@
       "presoAltri": false
     },
     {
+      "name": "Giovane",
+      "teamName": "Napoli",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.45,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lucca",
+      "teamName": "Napoli",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Corvi",
       "teamName": "Parma",
       "roles": [
@@ -3683,21 +5231,7 @@
         "por"
       ],
       "titolarita": 25.0,
-      "fmv": 4.76,
-      "rigorista": null,
-      "punizioni": null,
-      "angoli": null,
-      "presoNoi": false,
-      "presoAltri": false
-    },
-    {
-      "name": "Circati",
-      "teamName": "Parma",
-      "roles": [
-        "dc"
-      ],
-      "titolarita": 95.0,
-      "fmv": 5.92,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3750,7 +5284,7 @@
       "presoAltri": false
     },
     {
-      "name": "Britshgi",
+      "name": "Britschgi",
       "teamName": "Parma",
       "roles": [
         "ds",
@@ -3759,6 +5293,49 @@
       ],
       "titolarita": 50.0,
       "fmv": 5.7,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Carboni F.",
+      "teamName": "Parma",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ndiaye",
+      "teamName": "Parma",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.36,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Valenti",
+      "teamName": "Parma",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.83,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3780,7 +5357,7 @@
       "presoAltri": false
     },
     {
-      "name": "Keità M.",
+      "name": "Keita M.",
       "teamName": "Parma",
       "roles": [
         "m",
@@ -3802,7 +5379,7 @@
         "a"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3839,13 +5416,58 @@
       "presoAltri": false
     },
     {
+      "name": "Almqvist",
+      "teamName": "Parma",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.05,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Cremaschi",
+      "teamName": "Parma",
+      "roles": [
+        "e",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ordonez C.",
+      "teamName": "Parma",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.81,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Tourè E.",
       "teamName": "Parma",
       "roles": [
         "pc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 3,
       "punizioni": null,
       "angoli": null,
@@ -3873,7 +5495,21 @@
         "a"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lontani",
+      "teamName": "Parma",
+      "roles": [
+        "a"
+      ],
+      "titolarita": 50.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3887,7 +5523,21 @@
         "pc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "De Martis",
+      "teamName": "Parma",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3909,13 +5559,27 @@
       "presoAltri": false
     },
     {
+      "name": "De Marzi",
+      "teamName": "Roma",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Gollini",
       "teamName": "Roma",
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
-      "fmv": null,
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -3971,7 +5635,7 @@
         "e"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4013,7 +5677,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4030,6 +5694,20 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ziolkowski",
+      "teamName": "Roma",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.77,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4060,6 +5738,20 @@
       ],
       "titolarita": 95.0,
       "fmv": 6.54,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Mora",
+      "teamName": "Roma",
+      "roles": [
+        "t"
+      ],
+      "titolarita": 75.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4167,12 +5859,26 @@
       "presoAltri": false
     },
     {
+      "name": "Vaz",
+      "teamName": "Roma",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.36,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Muric",
       "teamName": "Sassuolo",
       "roles": [
         "por"
       ],
-      "titolarita": 75.0,
+      "titolarita": 50.0,
       "fmv": 4.77,
       "rigorista": null,
       "punizioni": null,
@@ -4186,8 +5892,36 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 50.0,
       "fmv": 5.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Russo A.",
+      "teamName": "Sassuolo",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Satalino",
+      "teamName": "Sassuolo",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4276,7 +6010,22 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Pieragnolo",
+      "teamName": "Sassuolo",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4291,7 +6040,7 @@
         "c"
       ],
       "titolarita": 95.0,
-      "fmv": 5.06,
+      "fmv": 5.96,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4329,6 +6078,21 @@
       "presoAltri": false
     },
     {
+      "name": "Bakola",
+      "teamName": "Sassuolo",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 50.0,
+      "fmv": 6.17,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Lipani",
       "teamName": "Sassuolo",
       "roles": [
@@ -4352,6 +6116,65 @@
       ],
       "titolarita": 50.0,
       "fmv": 6.52,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Dominguez B.",
+      "teamName": "Sassuolo",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.04,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Boloca",
+      "teamName": "Sassuolo",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.75,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Iannoni",
+      "teamName": "Sassuolo",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.3,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Konè I.",
+      "teamName": "Sassuolo",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 6.63,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4415,13 +6238,13 @@
       "presoAltri": false
     },
     {
-      "name": "Perri",
-      "teamName": "Torino",
+      "name": "Moro L.",
+      "teamName": "Sassuolo",
       "roles": [
-        "por"
+        "pc"
       ],
-      "titolarita": 50.0,
-      "fmv": null,
+      "titolarita": 1.0,
+      "fmv": 5.5,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4434,8 +6257,36 @@
       "roles": [
         "por"
       ],
-      "titolarita": 50.0,
+      "titolarita": 75.0,
       "fmv": 4.52,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Mascardi",
+      "teamName": "Torino",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Siviero",
+      "teamName": "Torino",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4506,7 +6357,23 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Biraghi",
+      "teamName": "Torino",
+      "roles": [
+        "ds",
+        "b",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.59,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4535,7 +6402,7 @@
         "w"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4550,7 +6417,7 @@
         "c"
       ],
       "titolarita": 75.0,
-      "fmv": 5.81,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4603,12 +6470,86 @@
       "presoAltri": false
     },
     {
+      "name": "Aboukhlal",
+      "teamName": "Torino",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.59,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Anjorin",
+      "teamName": "Torino",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.72,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ilkhan",
+      "teamName": "Torino",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Njie",
+      "teamName": "Torino",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.1,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Ilic",
+      "teamName": "Torino",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.88,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Simeone",
       "teamName": "Torino",
       "roles": [
         "pc"
       ],
-      "titolarita": 95.0,
+      "titolarita": 75.0,
       "fmv": 7.1,
       "rigorista": null,
       "punizioni": null,
@@ -4645,6 +6586,20 @@
       "presoAltri": false
     },
     {
+      "name": "Kulenovic",
+      "teamName": "Torino",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.71,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Okoye",
       "teamName": "Udinese",
       "roles": [
@@ -4664,8 +6619,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
+      "titolarita": 1.0,
       "fmv": 5.25,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Piana",
+      "teamName": "Udinese",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4762,6 +6731,79 @@
       "presoAltri": false
     },
     {
+      "name": "Ebosse",
+      "teamName": "Udinese",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.69,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Mlacic",
+      "teamName": "Udinese",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Palma",
+      "teamName": "Udinese",
+      "roles": [
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.5,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Abankwah",
+      "teamName": "Udinese",
+      "roles": [
+        "dc",
+        "dd"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Arizala",
+      "teamName": "Udinese",
+      "roles": [
+        "ds",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.8,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Ekkelenkamp",
       "teamName": "Udinese",
       "roles": [
@@ -4828,7 +6870,67 @@
         "t"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Chakvetadze",
+      "teamName": "Udinese",
+      "roles": [
+        "t",
+        "w"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Miller L.",
+      "teamName": "Udinese",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.92,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Camara A.",
+      "teamName": "Udinese",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Zarraga",
+      "teamName": "Udinese",
+      "roles": [
+        "m",
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.65,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4850,13 +6952,69 @@
       "presoAltri": false
     },
     {
+      "name": "Buksa",
+      "teamName": "Udinese",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 6.24,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gueye",
+      "teamName": "Udinese",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.92,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Bayo V.",
+      "teamName": "Udinese",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 5.83,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Stankovic F.",
       "teamName": "Venezia",
       "roles": [
         "por"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Montipò",
+      "teamName": "Venezia",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 50.0,
+      "fmv": 4.94,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4869,8 +7027,22 @@
       "roles": [
         "por"
       ],
-      "titolarita": 25.0,
-      "fmv": null,
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Pozzi",
+      "teamName": "Venezia",
+      "roles": [
+        "por"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4898,7 +7070,7 @@
         "dc"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4913,7 +7085,7 @@
         "e"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4921,14 +7093,14 @@
       "presoAltri": false
     },
     {
-      "name": "Correira T.",
+      "name": "Correia T.",
       "teamName": "Venezia",
       "roles": [
         "dd",
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4943,7 +7115,7 @@
         "e"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4957,7 +7129,7 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4971,7 +7143,68 @@
         "dc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Franjic",
+      "teamName": "Venezia",
+      "roles": [
+        "ds",
+        "b",
+        "e"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Gomes",
+      "teamName": "Venezia",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Sagrado",
+      "teamName": "Venezia",
+      "roles": [
+        "dd",
+        "e"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Sverko",
+      "teamName": "Venezia",
+      "roles": [
+        "ds",
+        "dc"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -4986,7 +7219,7 @@
         "c"
       ],
       "titolarita": 95.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": 1,
       "angoli": 1,
@@ -5015,7 +7248,7 @@
         "c"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": null,
@@ -5030,7 +7263,7 @@
         "t"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": null,
       "punizioni": null,
       "angoli": 2,
@@ -5052,13 +7285,42 @@
       "presoAltri": false
     },
     {
+      "name": "Helgason",
+      "teamName": "Venezia",
+      "roles": [
+        "c",
+        "t"
+      ],
+      "titolarita": 25.0,
+      "fmv": 5.63,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Duncan",
+      "teamName": "Venezia",
+      "roles": [
+        "c"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
       "name": "Adams A.",
       "teamName": "Venezia",
       "roles": [
         "pc"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 1,
       "punizioni": null,
       "angoli": null,
@@ -5072,7 +7334,7 @@
         "a"
       ],
       "titolarita": 75.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 3,
       "punizioni": null,
       "angoli": null,
@@ -5086,8 +7348,51 @@
         "pc"
       ],
       "titolarita": 50.0,
-      "fmv": null,
+      "fmv": 0.0,
       "rigorista": 2,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Adorante",
+      "teamName": "Venezia",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lauberbach",
+      "teamName": "Venezia",
+      "roles": [
+        "pc"
+      ],
+      "titolarita": 25.0,
+      "fmv": 0.0,
+      "rigorista": null,
+      "punizioni": null,
+      "angoli": null,
+      "presoNoi": false,
+      "presoAltri": false
+    },
+    {
+      "name": "Lisman",
+      "teamName": "Venezia",
+      "roles": [
+        "w",
+        "a"
+      ],
+      "titolarita": 1.0,
+      "fmv": 0.0,
+      "rigorista": null,
       "punizioni": null,
       "angoli": null,
       "presoNoi": false,
